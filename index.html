@@ -1,0 +1,833 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>헤리티지 옷장</title><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#2f4a6d"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="헤리티지 옷장">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Phone-first port of HERITAGE STUDIO v3. Sticky header with 5 tabs; each tab is one column of cards.
+   Secondary work (editing, rating, comparing) opens in a bottom sheet so the main screens stay calm. */
+:root{
+  --bg:#f3f1ec; --surface:#ffffff; --fg:#1f2328; --muted:#6b6f75; --line:#dcd8cf;
+  --accent:#2f4a6d; --accent-fg:#ffffff; --brass:#9a7428; --soft:#f1ede4;
+  --ok-bg:#e3efe3; --ok-fg:#25562b; --warn-bg:#fbefc9; --warn-fg:#6e4f00; --err-bg:#f8e1df; --err-fg:#8a2a22;
+  --tag-bg:#f7f1e3; --tag-fg:#3a2f1a; --barbg:#e7e3da;
+  --font-body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15171a; --surface:#1e2126; --fg:#e8e6e1; --muted:#9a9ea5; --line:#33373e;
+  --accent:#8fb0db; --accent-fg:#10151c; --brass:#d2a956; --soft:#262a30;
+  --ok-bg:#1f3524; --ok-fg:#a7d8ae; --warn-bg:#3d3216; --warn-fg:#f1d38a; --err-bg:#3b1f1d; --err-fg:#f2b8b2;
+  --tag-bg:#2c2718; --tag-fg:#f0e2c0; --barbg:#2a2d33; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15171a; --surface:#1e2126; --fg:#e8e6e1; --muted:#9a9ea5; --line:#33373e;
+  --accent:#8fb0db; --accent-fg:#10151c; --brass:#d2a956; --soft:#262a30;
+  --ok-bg:#1f3524; --ok-fg:#a7d8ae; --warn-bg:#3d3216; --warn-fg:#f1d38a; --err-bg:#3b1f1d; --err-fg:#f2b8b2;
+  --tag-bg:#2c2718; --tag-fg:#f0e2c0; --barbg:#2a2d33; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--font-body);margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;border-bottom:1px solid var(--line);
+  margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hrow{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+h1 small{font-weight:500;color:var(--brass);font-size:11px;margin-left:6px;letter-spacing:.08em}
+.src{font-size:12px;color:var(--muted);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.src b{color:var(--warn-fg);font-weight:600}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.tabs button{font:inherit;font-weight:600;font-size:13.5px;border:0;background:transparent;color:var(--muted);padding:8px 0;border-radius:7px;cursor:pointer;position:relative}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-fg)}
+.tabs .dot{position:absolute;top:5px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--brass)}
+main{padding-top:14px;display:flex;flex-direction:column;gap:14px}
+section{display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+h2{font-size:15px;margin:0;font-weight:700}
+h3{font-size:13px;margin:0;color:var(--muted);font-weight:600}
+.note{font-size:13px;color:var(--muted);margin:0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.spread{justify-content:space-between}
+textarea,input,select{width:100%;font:16px/1.4 var(--font-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 11px;min-width:0}
+textarea{resize:vertical;min-height:70px}
+input[type=file]{padding:7px;font-size:14px}
+textarea:focus,input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn{font:inherit;font-weight:600;font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:8px 13px;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--accent);padding:6px 8px}
+.btn.small{font-size:12.5px;padding:5px 10px;border-radius:999px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5;cursor:default}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btngrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips.wrapc{flex-wrap:wrap;overflow:visible}
+.chip{flex:none;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:5px 11px;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip .n{opacity:.6;margin-left:3px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1px solid rgba(127,127,127,.5)}
+.tag{font-weight:700;font-size:12.5px;font-variant-numeric:tabular-nums;background:var(--tag-bg);color:var(--tag-fg);border:1px solid var(--brass);border-radius:4px;padding:0 6px;letter-spacing:.04em;white-space:nowrap}
+.pill{font-size:11px;font-weight:600;border-radius:999px;padding:1px 7px;white-space:nowrap;background:var(--soft);color:var(--muted)}
+.pill.warn{background:var(--warn-bg);color:var(--warn-fg)} .pill.ok{background:var(--ok-bg);color:var(--ok-fg)}
+.msg{border-radius:10px;padding:9px 12px;font-size:14px;white-space:pre-wrap}
+.msg.ok{background:var(--ok-bg);color:var(--ok-fg)} .msg.warn{background:var(--warn-bg);color:var(--warn-fg)} .msg.err{background:var(--err-bg);color:var(--err-fg)}
+.empty{padding:22px 8px;text-align:center;color:var(--muted);font-size:14px;line-height:1.6}
+/* item rows */
+.irow{display:flex;gap:10px;align-items:center;min-width:0}
+.thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;background:var(--barbg);flex:none}
+.thumb.none{display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);text-align:center}
+.itext{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px}
+.itext .l1{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.itext .nm{font-weight:600;font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+.piece{display:flex;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.piece:first-child{border-top:0}
+.piece.found .irow{opacity:.45}
+.iconbtn{flex:none;font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:6px 9px;cursor:pointer}
+.iconbtn.check{width:38px;padding:6px 0;font-size:15px}
+.iconbtn.check[aria-pressed="true"]{background:var(--ok-bg);color:var(--ok-fg);border-color:var(--ok-fg)}
+/* plates */
+.plates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.plate{position:relative;display:flex;flex-direction:column;align-items:stretch;padding:0;overflow:hidden;border:1px solid #0002;border-radius:6px;color:#28332b;text-align:left;background:var(--field);font:inherit;cursor:pointer;min-width:0}
+.plate0{--field:#dfcdbb}.plate1{--field:#d7dcca}.plate2{--field:#d1d9da}
+.plate.selected{border-color:var(--accent);box-shadow:inset 0 -3px var(--accent)}
+.plate svg{height:clamp(150px,42vw,250px);width:100%;display:block;padding:16px 0 0}
+.plate.big{cursor:zoom-in}
+.plate.big svg{height:min(50vh,400px);padding:22px 0 4px}
+.plate.mini svg{height:120px;padding:6px 0 0}
+.plate-tag{position:absolute;top:6px;left:7px;font:600 9px/1.2 ui-monospace,Menlo,monospace;letter-spacing:1px}
+.plate.big .plate-tag{font-size:11px;top:10px;left:12px}
+.plate-fav{position:absolute;top:6px;right:8px;font-size:14px;color:#9a7428}
+.plate-footer{padding:6px 7px 8px;display:flex;flex-direction:column;gap:4px;border-top:1px solid #0002;min-width:0}
+.plate-footer strong{font-size:12px;line-height:1.3;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fabric{display:flex;gap:2px}.fabric i{width:10px;height:7px;border:1px solid #0002}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:1}
+.seg button{flex:1;font:inherit;font-size:13px;border:0;background:var(--surface);color:var(--fg);padding:7px 4px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.sty{display:flex;align-items:center;gap:8px;font-size:13px}.sty>span{width:46px;color:var(--muted);flex:none}
+details.fold{border-top:1px solid var(--line);padding-top:8px}
+details.fold>summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);list-style:none;display:flex;justify-content:space-between}
+details.fold>summary::after{content:"펼치기";font-weight:500}
+details.fold[open]>summary::after{content:"접기"}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>.inner{display:flex;flex-direction:column;gap:8px;padding-top:8px}
+.flat{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.flat img,.flat .noimg{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:6px;background:var(--barbg);display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--muted)}
+.actionbar{display:grid;grid-template-columns:auto 1fr;gap:8px}
+/* journal */
+.rec{display:flex;flex-direction:column;gap:8px}
+.rechead{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.rechead .d{font-size:12px;color:var(--muted)}
+.rechead b{font-size:15px}
+.score{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.score small{font-size:12px;color:var(--muted);font-weight:500}
+.recbody{display:grid;grid-template-columns:92px 1fr;gap:10px;align-items:start}
+.recbody .plate{width:92px}
+.strip{display:flex;gap:4px;flex-wrap:wrap}
+.strip .thumb{width:40px;height:40px}
+.review p{margin:4px 0;font-size:13px;white-space:pre-wrap}
+.review b{font-size:12px;color:var(--muted)}
+/* closet */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (min-width:640px){.cgrid{grid-template-columns:repeat(3,1fr)}}
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0;font:inherit;color:inherit;text-align:left;padding:0;cursor:pointer;position:relative}
+.ccard.sel{outline:3px solid var(--accent);outline-offset:-3px}
+.ccard img,.ccard .noimg{width:100%;aspect-ratio:1/1;object-fit:cover;background:var(--barbg);display:block}
+.ccard .noimg{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+.ccard .cb{padding:7px 9px 9px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.ccard .cb .l1{display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.ccard .nm{font-size:13px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.ccard .selmark{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:var(--surface);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.ccard.sel .selmark{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.floatbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:8;display:flex;gap:8px;background:var(--fg);color:var(--bg);border-radius:999px;padding:6px 6px 6px 16px;align-items:center;box-shadow:0 6px 20px #0003;max-width:calc(100% - 32px)}
+.floatbar .btn{border-radius:999px}
+.dl{display:grid;grid-template-columns:84px 1fr;gap:4px 10px;font-size:13.5px;margin:0}
+.dl dt{color:var(--muted)} .dl dd{margin:0;overflow-wrap:anywhere}
+.gallery{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory}
+.gallery img{height:240px;width:auto;max-width:85%;object-fit:cover;border-radius:10px;scroll-snap-align:start;background:var(--barbg);cursor:zoom-in}
+.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.compare .col{display:flex;flex-direction:column;gap:6px;min-width:0}
+.compare img,.compare .noimg{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;background:var(--barbg);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted)}
+.compare .k{font-size:11px;color:var(--muted)}
+.compare .v{font-size:13px;overflow-wrap:anywhere}
+/* stats */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px}
+.kpi .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .k{font-size:12px;color:var(--muted)}
+.brow{display:grid;grid-template-columns:minmax(0,1fr) 90px 34px;gap:8px;align-items:center;font-size:13px}
+.brow .bn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .bar{height:8px;background:var(--barbg);border-radius:4px;overflow:hidden}
+.brow .bar i{display:block;height:100%;background:var(--accent)}
+.brow .bv{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+/* forms */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);min-width:0}
+.score10{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.score10 button{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;padding:6px 0;cursor:pointer;min-width:0}
+.score10 button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.dim{display:flex;flex-direction:column;gap:4px}
+.dim>span{font-size:12px;color:var(--muted)}
+.photos{display:flex;gap:6px;flex-wrap:wrap}
+.photos .ph{position:relative}
+.photos img{width:72px;height:72px;object-fit:cover;border-radius:8px;display:block}
+.photos .x{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--fg);color:var(--bg);font-size:13px;cursor:pointer}
+/* sheets */
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet .box{background:var(--bg);width:100%;max-width:760px;max-height:90vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;
+  padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));gap:10px}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto}
+.sheet .body{overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:0;padding-bottom:4px}
+#picker{z-index:25}
+.opt{font:inherit;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:6px 8px;cursor:pointer;width:100%}
+#lb{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.92);display:flex;flex-direction:column;
+  padding:calc(env(safe-area-inset-top,0px) + 8px) max(8px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 8px) max(8px,env(safe-area-inset-left,0px))}
+#lb .lbtop{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:4px 4px 8px;gap:8px}
+#lb .lbtop button{font:inherit;font-size:15px;background:#ffffff22;color:#fff;border:0;border-radius:8px;padding:6px 14px;cursor:pointer}
+#lb .lbimgs{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;min-height:0}
+#lb .lbimgs img{flex:none;width:100%;height:100%;object-fit:contain;scroll-snap-align:center}
+#lb .lbimgs svg{flex:none;width:100%;height:100%;background:#dfcdbb;border-radius:8px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:14px;max-width:calc(100% - 32px)}
+[hidden]{display:none!important}
+</style>
+
+<header><div class="hrow">
+  <div class="top"><h1>헤리티지 옷장<small>MOBILE</small></h1><div class="src" id="srcText"></div></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="look" type="button">룩북</button>
+    <button role="tab" data-tab="journal" type="button">일지</button>
+    <button role="tab" data-tab="closet" type="button">옷장</button>
+    <button role="tab" data-tab="stats" type="button">통계</button>
+    <button role="tab" data-tab="sync" type="button">백업</button>
+  </div>
+</div></header>
+
+<div class="wrap"><main>
+  <section id="sec-look"></section>
+  <section id="sec-journal" hidden></section>
+  <section id="sec-closet" hidden>
+    <div class="panel">
+      <div class="row"><input type="search" id="q" placeholder="ID나 이름으로 찾기" autocomplete="off" style="flex:1"><button class="btn" type="button" data-act="newItem">＋ 새 옷</button></div>
+      <div class="chips" id="catChips"></div>
+      <div class="chips" id="colorChips"></div>
+      <div class="row spread"><div class="chips" id="statusChips"></div><button class="btn small" type="button" id="cmpMode" data-act="cmpMode" aria-pressed="false">비교</button></div>
+    </div>
+    <p class="note" id="closetCount"></p>
+    <div class="cgrid" id="closet"></div>
+  </section>
+  <section id="sec-stats" hidden></section>
+  <section id="sec-sync" hidden></section>
+</main></div>
+
+<div class="floatbar" id="cmpBar" hidden><span id="cmpText"></span><button class="btn small primary" type="button" data-act="cmpOpen">비교하기</button><button class="btn small" type="button" data-act="cmpClear">취소</button></div>
+<div class="sheet" id="sheet" hidden><div class="box"><div class="grab"></div><div class="top"><h2 id="sheetTitle"></h2><button class="btn small" type="button" data-act="closeSheet">닫기</button></div><div class="body" id="sheetBody"></div></div></div>
+<div class="sheet" id="picker" hidden><div class="box"><div class="grab"></div><div class="top"><h2 id="pickTitle">옷 고르기</h2><button class="btn small" type="button" data-act="closePicker">닫기</button></div>
+  <input type="search" id="pickQ" placeholder="ID나 이름으로 찾기" autocomplete="off"><div class="chips" id="pickCats"></div><div class="body" id="pickList"></div></div></div>
+<div id="lb" hidden><div class="lbtop"><span id="lbTitle"></span><button type="button" data-act="closeLb">닫기</button></div><div class="lbimgs" id="lbImgs"></div></div>
+<div id="toast" hidden></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+// ================= data baked in at publish (sheet snapshot) =================
+const SNAPSHOT = [["O01","아우터","브라운 스웨이드 스탠드카라 집업 재킷","인조 스웨이드로 보임, 스냅 카라, 라벨 'MJ' 로고, 사이즈 미확인","","보유","",0],["O02","아우터","다크 브라운 스웨이드 무톤 자켓","도프제이슨 솔리드 스웨이드 무톤 GRIZZLY, 2XL, 인조 스웨이드 + 털 안감","","보유","2026.11 주문",0],["O03","아우터","다크 인디고 데님 집업 블루종","에잇세컨즈, 105(XL), 면 71%·폴리 29%, 안감 폴리 100%, 화이트 스티치, 2023.12 제조","","보유","",0],["O04","아우터","블랙 레더 재킷","브이투 465-3 비건 레더 오버핏, M, 인조가죽","","보유","",1],["O05","아우터","아이보리 퍼플 라인 후드 집업","널디 NERDY, L, 소매 퍼플 투라인","","보유","",0],["O06","아우터","블랙 블레이저","2버튼 노치드 라펠, 브랜드 라벨 미확인","","보유","",0],["O07","아우터","미디엄 블루 컷오프 데님 재킷","PLAC, L, 미디엄 블루 워싱, 밑단 컷오프","","보유","",0],["O08","아우터","블랙 숏패딩","디미트리블랙 ALL SEASON ITEM 후드 숏패딩, 사이즈 3, 소재 택 미확인","","보유","",0],["O09","아우터","차콜 그레이 퀼팅 봄버 재킷","MA-1형, 블랙 립 카라·소매·밑단, 호칭 110, 겉감 폴리 85%·면 15%, 안감·충전재 폴리 100%. 브랜드 라벨은 사진에서 판독 어려움","","보유","",0],["O10","아우터","블랙 덕다운 롱패딩","후드, 덕다운 80%·깃털 20%, 겉감 나일론 PERTEX SHIELD, 브랜드 로고 판독 어려움","","보유","",0],["O11","아우터","블랙 울 하프 재킷","셔츠 카라, 플랩 패치 포켓, 오버핏. 택 없음 — 울 혼방으로 추정","","보유","",0],["O12","아우터","블랙 보아 안감 집업 재킷","스탠드 카라, 겉감 코튼·폴리 계열로 추정, 안감 아이보리 보아 전체. 택 없음","","보유","",1],["O13","아우터","베이지 헤링본 울 코트","싱글, 셔츠 카라, 롱 기장, 택 미확인","","보유","",0],["O14","아우터","라이트 베이지 패딩 하프코트","105(XL)·키 182, 택 색상명 카키(실물 라이트 베이지), 나일론 100%·충전재 폴리 100%, 삼성물산 판매, 2021.01 제조","","보유","",0],["O15","아우터","네이비 로고 후드 집업","그루브라임, XL, 가슴·소매 GRV 프린트","","보유","",0],["O16","아우터","화이트 아디다스 AFA 트랙 재킷","AFA) 트랙 재킷 (ZNE, XL(183cm), 폴리 87%·면 13%","","보유","",0],["O17","아우터","헤더 그레이 로고 후드 집업","Lee, XL, 스냅 여밈","","보유","",0],["O18","아우터","블랙 경량 패딩 조끼","라운드넥, 안쪽 그레이, 택 미확인","","보유","",0],["T01","상의","크림 코튼 리브드 크루넥 니트","무신사 스탠다드, L","","보유","",0],["T02","상의","세이지 그린 와플 니트","유니클로, XL","","보유","",0],["T03","상의","아이보리 와플 긴소매 티셔츠","무신사 스탠다드 릴렉스드 크루넥, XL","","보유","",0],["T04","상의","차콜 그레이 피그먼트 와플 긴소매 티셔츠","무신사 스탠다드, XL","","보유","",0],["T05","상의","브라운 헨리넥 니트","수아레 데일리 헨리넥, XL","","보유","",1],["T06","상의","블랙 헨리넥 니트","수아레 데일리 헨리넥, XL","","보유","",0],["T07","상의","블랙 래글런 크루넥 니트","택 미확인","","보유","",0],["T08","상의","크림 하프집업 스웨트셔츠","Jeep 루즈핏, XL, 나침반 패치","","보유","",0],["T09","상의","헤더 그레이 프린트 오버사이즈 스웨트셔츠","바냐인더트리 화이트라벨 \"BUZZ\"","","보유","",0],["T10","상의","화이트 옥스퍼드 셔츠","무신사 스탠다드 오버핏, XL, 가슴 포켓","","보유","",0],["T11","상의","화이트 와이셔츠","유니클로, L, 버튼다운 카라","","보유","",0],["T12","상의","화이트 드레스 셔츠","SIEG STANDARD, 105","","보유","",0],["T13","상의","라이트 블루 샴브레이 오버사이즈 셔츠","긴팔, 가슴 포켓, 라벨 '…OUTFITTERS' 판독 어려움. T14와 같은 제품(색만 다름), 원단이 약간 빳빳하고 두께감 있음","","보유","",0],["T14","상의","그레이 워싱 데님 오버사이즈 셔츠","긴팔, 가슴 포켓, 택 미확인. T13과 같은 제품(색만 다름), 원단이 약간 빳빳하고 두께감 있음","","보유","",0],["T15","상의","핑크·그레이 마이크로 체크 셔츠","자라, EUR XL, 오버핏","","보유","",0],["T16","상의","스카이블루 시어서커 반팔 셔츠 ×2","굿라이프웍스 GLW, L, 오버핏, 같은 셔츠 2벌","여름","보유","",0],["T17","상의","네이비 시어서커 반팔 셔츠","굿라이프웍스 GLW, L, 오버핏","여름","보유","",0],["T18","상의","화이트 시어서커 반팔 셔츠","굿라이프웍스 GLW, L, 오버핏","여름","보유","",0],["T19","상의","화이트 반팔 셔츠","에잇세컨즈, XL, 오버핏, 가슴 포켓","여름","보유","",0],["T20","상의","라이트 블루 옥스퍼드 반팔 셔츠","무신사 스탠다드, XL","여름","보유","",0],["T21","상의","라이트 블루그레이 시어서커 반팔 셔츠","커버낫, XL, 투포켓","여름","보유","",0],["T22","상의","옐로 반팔 셔츠","유니클로, XL, 면·린넨 계열","여름","보유","",0],["T23","상의","핑크 반팔 셔츠","유니클로, XL, 솔리드 샴브레이, 가슴 포켓","여름","보유","",0],["T24","상의","블랙 반팔 셔츠","스파오, XL(180/100A), 레귤러 핏","여름","보유","",0],["T25","상의","인디고 데님 반팔 셔츠","마인드브릿지 COUTURE, 투포켓","여름","보유","",0],["T26","상의","베이지 V넥 니트 가디건","에잇세컨즈, L","","보유","",0],["T27","상의","네이비 V넥 니트 조끼","그레이·화이트 라인 배색, 택 미확인","","보유","",0],["T28","상의","베이지 V넥 골지 니트 조끼","Z.Z BLACK, L","","보유","",0],["T29","상의","아이보리 V넥 니트 조끼","네이비·올리브 그린 라인 배색, 택 미확인","","보유","",0],["T30","상의","브라운 레이어드 티셔츠","자라 MAN EDITION SS25, L, 아이보리 넥 레이어드","","보유","",0],["T31","상의","네이비 레이어드 티셔츠","자라 MAN EDITION SS25, L, 아이보리 링거 카라 레이어드","","보유","",0],["T32","상의","라이트 블루 코튼 크루넥 니트","자라, L","","보유","",0],["T33","상의","화이트·블랙 스트라이프 긴소매 티셔츠","인템포무드 스테디, 오레오, XL","","보유","",0],["T34","상의","차콜 체크 반팔 셔츠","놈브레 시그니처, XL","여름","보유","",0],["T35","상의","퍼플 로고 긴소매 티셔츠","널디 NERDY, XL, 바이올렛, 네온 옐로 타원 로고","","보유","",0],["T36","상의","라이트 그레이 로고 후드티","널디 NERDY, L","","보유","",0],["T37","상의","네이비 긴소매 티셔츠","유니클로 크루넥, XL","","보유","",0],["T38","상의","블랙 긴소매 티셔츠","유니클로 크루넥, 사이즈 판독 어려움","","보유","",0],["T39","상의","블랙 로고 스웨트셔츠","라이프워크 LIFEWORK \"HIDEAWAY\", L","","보유","",0],["T40","상의","블랙·화이트·레드 스트라이프 긴소매 티셔츠","그루브라임, L","","보유","",0],["T41","상의","블랙 로고 긴소매 티셔츠","널디 NERDY \"WHO IS NERDY?\", XL, 페이드 블랙","","보유","",0],["T42","상의","화이트 피케 반팔 폴로","타미힐피거, XL, 클래식 핏","여름","보유","",0],["T43","상의","그린 반팔 티셔츠","반스, L, 레귤러 핏","여름","보유","",0],["T44","상의","무지·로고 반팔 티셔츠 다수","개별 목록 없음, 편하게 입는 용도","여름","보유","",0],["T45","상의","화이트 긴소매 피케 폴로","폴로 랄프로렌 빅포니 \"FRANCE\", XL(180/112A), 커스텀 핏","","보유","",0],["T46","상의","네이비 긴소매 피케 폴로","폴로 랄프로렌 빅포니 \"SPAIN\", XL(180/112A), 커스텀 핏","","보유","",0],["T47","상의","그레이 코튼 크루넥 니트","타미힐피거 프리미엄 코튼, XL","","보유","",0],["T48","상의","네이비·크림 럭비 셔츠","R.A.T C.R.W, XL, 크림 카라·사선 배색","","보유","",1],["T49","상의","크림 스웨트셔츠","다이클레즈 dyclez \"MATCHLESS\", XL","","보유","",0],["T50","상의","테라코타 오렌지 스웨트셔츠","스노우피크, KR 105 / JP XL","","보유","",0],["T51","상의","베이지 패치워크 기모 스웨트셔츠","게스 LOS ANGELES, XL, 안쪽 기모","","보유","",0],["B01","하의","차콜 그레이 원턱 와이드 슬랙스","리자드스탠다드, M, 폴리 85%·레이온 10%·스판 5%","","보유","",0],["B02","하의","블랙 원턱 와이드 슬랙스","지오지아, 84","","보유","",0],["B03","하의","블랙 슬랙스","무신사 스탠다드, 32","","보유","",0],["B04","하의","베이지 원턱 슬랙스","무신사 스탠다드, 32","","보유","",0],["B05","하의","그레이지 슬랙스","인스펙터 INSPECTOR, 32, 라이트 베이지~그레이 톤, 혼 단추","","보유","",0],["B06","하의","차콜 그레이 슬랙스","무신사 스탠다드, 32","","보유","",0],["B07","하의","라이트 블루 데님","H&M 릴랙스드 핏 표기, 32/30, 실제 핏은 스트레이트~슬림 사이, 기장 발목까지","","보유","",0],["B08","하의","생지 와이드 스트레이트 데님","에잇세컨즈, 82(신장 178), 면 100%, 다크 인디고, 2024.12 제조","","보유","",1],["B09","하의","블랙 슬림 데님","디프런트, 택 표기 STANDARD 핏이지만 실제 착용감은 슬림, 82/USA 32","","보유","",0],["B10","하의","로우 블랙 트위스트 세미 벌룬 데님","무신사 스탠다드, 33","","보유","",0],["B11","하의","라이트 그레이 와이드 스트레이트 데님","자라, EUR 40/USA 31","","보유","",0],["B12","하의","라이트 베이지 하프밴딩 코튼 팬츠","지오지아, 84, 뒤 허리 밴딩·혼 단추, 원단 매우 얇음 — 봄·여름용","여름","보유","",0],["B13","하의","크림 면·린넨 이지 팬츠","유니클로, L(허리 84~92cm), 면 63%·마 35%·PU 2%, 허리 끈","","보유","",0],["B14","하의","오프화이트 히든 밴딩 치노","무신사 스탠다드 레귤러 핏, 34, 구매명 크림","","보유","",0],["B15","하의","카키 캔버스 카펜터 팬츠","스파오, 34(180/86A), 해머 루프·리벳","","보유","",0],["B16","하의","라이트 그레이 와이드 스웨트팬츠","제로바이너리 XEROBNR, FREE, 밴딩","","보유","",0],["B17","하의","그레이 워싱 와이드 데님","무신사 스탠다드 린넨 라이크 엑스트라 와이드, 32, 면 100%, 허리 85·엉덩이 102","","보유","",0],["B18","하의","블랙 아디다스 삼선 트랙팬츠","XL(허리 88·신장 183), 폴리 100%, 지퍼 포켓","","보유","",0],["B19","하의","블랙 퍼티그 팬츠","무신사 스탠다드, 32, 코튼, 밑단 스트링","","보유","",0],["B20","하의","블랙 프린트 스웨트팬츠","로드사인 ROADSIGN 'KEEP THE SPIRIT', KOR 30/M, 편하게 막 입는 용도","","보유","",0],["B21","하의","블랙 스웨트팬츠","제로바이너리 XEROBNR, FREE, 밴딩","","보유","",0],["B22","하의","차콜 그레이 스웨트팬츠","탑텐, 82","","보유","",0],["B23","하의","블랙 밴딩 슬랙스","에잇세컨즈, 82, 허리 스트링, 테이퍼드, 슬랙스 느낌 원단","","보유","",0],["B24","하의","라이트 블루 스트레이트 데님","INSTANT DENIM, 32, 면 100%, 라이트 블루 스트레이트","","보유","",0],["B25","하의","라이트 블루 와이드 데님","스파오, 82, 면 100%, 워싱 와이드","","보유","",0],["B26","하의","인디고 데님 밴딩 와이드 팬츠","마인드브릿지 COUTURE, 허리 87·엉덩이 106, 면 72%·폴리 27%·PU 1%, 원턱·스티치 포인트","","보유","",0],["B27","하의","브라운 피그먼트 원턱 와이드 스웨트팬츠","무신사 스탠다드, XL","","보유","",0],["B28","하의","브라운 코듀로이 와이드 밴딩 팬츠","토피, XL, 면 100%","","보유","2026.11 주문",0],["B29","하의","브라운 피그먼트 데님 와이드 더블니 카펜터 팬츠","무신사 스탠다드, 34","","보유","2026.11 주문",1],["S01","신발","브라운·크림 반스 추카 푸시","아티스트 컬렉션","","보유","2026.11 주문 초콜렛·베이지, 290",1],["S02","신발","블랙 스웨이드 독일군 스니커즈","식스핏 5IN HI 키높이 버전, 매트블랙, 290","","보유","",0],["S03","신발","화이트 레더 코트 스니커즈","무신사 스탠다드, 스무스 소가죽, 화이트 컵솔","","보유","",0],["S04","신발","오프화이트·그레이 BW 아미형 스니커즈","화이트·라이트 그레이 레더, 검솔 — 모델명은 생김새로 추정","","보유","",1],["A01","벨트","블랙 와플 패턴 벨트","니트 밴딩(브레이디드) 스트레치 벨트, 실버 D버클, 탄 가죽 탭. 브랜드·사이즈 미확인","","보유","",0],["A02","벨트","브라운 와플 패턴 벨트","니트 밴딩(브레이디드) 스트레치 벨트, 실버 D버클, 탄 가죽 탭. 브랜드·사이즈 미확인","","보유","",1],["A03","가방","블랙 각진 책가방","샘소나이트, 기존 사용 중인 출퇴근 가방","","보유","",2],["A04","가방","다크 브라운 코팅 캔버스 서류가방","탄틴 클래식 서류가방 T12089, 출퇴근용","","보유","2026.11 주문",0],["A05","장갑","브라운 가죽 장갑","사르토르 리사르투스 신슐레이트 풀터치, 터치스크린 가능","","보유","2026.11 주문",0],["A06","장갑","브라운 핑거홀 울 니트 장갑","데꼬로소","","주문(배송 전)","2026.11 주문",0],["A07","장갑","블랙 핑거홀 울 니트 장갑","데꼬로소, 브라운과 같은 모델 계열로 추정","","주문(배송 전)","2026.11 주문",0],["A08","목도리","올리브 그레이 체크 램스울 머플러","Burberrys of London, 램스울 100%, 영국 제조, 드라이클리닝 전용, 브라운·베이지 체크, 끝단 술, 사이즈 미확인","","보유","",1],["A09","벨트","다크 브라운 빈티지 가죽 벨트","워싱된 두꺼운 가죽, 앤틱 실버 사각 버클. 브랜드·사이즈 미확인","","보유","",1],["A10","벨트","다크 브라운 사피아노 가죽 벨트","사피아노 패턴, 유광 실버 프레임 버클, 뒷면 블랙(리버스블 여부 미확인). 브랜드·사이즈 미확인","","보유","",0],["A11","벨트","다크 브라운 꼬은 가죽 벨트","얇은 브레이디드 가죽, 실버 말발굽형 버클. 브랜드·사이즈 미확인","","보유","",0],["A12","장갑","차콜 그레이 니트 장갑","다섯 손가락, 리브 커프. 브랜드·사이즈·소재 미확인","","보유","",0],["A13","모자","아이보리 퍼 귀덮개 트래퍼 햇","브라운·그레이 퍼 귀덮개·챙, 턱 끈. 브랜드·사이즈·소재 미확인","","보유","",0],["A14","모자","차콜 리브 니트 바라클라바","케이블·리브 짜임. 브랜드·사이즈·소재 미확인","","보유","",0],["A15","목도리","카멜 브라운 앙고라 머플러","라벨 'Cashmere Angora', 앙고라 60%·캐시미어 10%·울 30%, 이탈리아 제조, 끝단 술. 브랜드 미확인","","보유","",0],["A16","목도리","블루·그레이 체크 머플러","ADON GIARRE, 아크릴 90%·폴리 10%, 한국 제조, 네이비 라인, 끝단 술","","보유","",0],["A17","목도리","그레이 체크 캐시미어 머플러","Burberrys of London, 캐시미어 100%, 영국 제조, 블랙·화이트·하늘색 라인, 끝단 술","","보유","",0],["A18","목도리","네이비·브라운·크림 체크 머플러","라벨 안 보임. 브랜드·소재 미확인","","보유","",0],["A19","목도리","차콜 그레이 헤링본 니트 머플러","양면 헤링본 짜임, 중국 제조, 드라이클리닝 전용. 다른 머플러보다 두껍고 훨씬 긺. 브랜드·소재 미확인","","보유","",0],["A20","목도리","퍼플 캐시미어 머플러","HUGO BOSS, 캐시미어 100%, 끝단 술","","보유","",0],["A21","목도리","네이비·그레이 스트라이프 니트 머플러","Daniel Hechter Paris, 라벨 100% 표기(아크릴로 보임). 다른 머플러보다 두껍고 훨씬 긺","","보유","",1],["T52","상의","그레이·브라운 플란넬 체크 셔츠","무신사 스탠다드 릴렉스드 플란넬 플레이드 옴브레 체크 셔츠, 그레이/브라운, XL","","보유","2026.11 주문, 29,890원",0],["S05","신발","화이트·블랙 미즈노 러닝화","미즈노 맥시마이저 27 화이트:블랙 K1GA250002, 290","","주문(배송 전)","2026.11 주문, 39,990원, 출근용 막 신는 러닝화",0],["A22","양말","솔리드 양말 9색","화이트·블랙·네이비·그레이(기존) + 브라운·코코아·카키·오트밀·딥그린(슈퍼베이직 1390)","","보유","컬러 5켤레는 2026.11 주문(배송 전), 8,810원. 양말은 색 구분 없이 이 한 행으로 기록",0],["B30","하의","하의 히트텍","히트텍 내복 하의, 바지 안에 입는 이너. 브랜드·색·사이즈 미확인","","보유","2026-11-24 등록. 추운 날 얇은 하의 아래에",0]];      // 옷장 DB rows [id,cat,name,detail,season,status,note,wear]
+const SNAPSHOT_LOG = [{"row":2,"date":"2026-11-23","dow":"월","min":1,"max":10,"weather":"비","ids":{"outer":"O12","top":"T05","bottom":"B08","shoes":"S04","bag":"A03","a1":"A02","a2":"A08","a3":""},"sit":"출근","score":6,"memo":"무거운 짐이 많아서 그런지 더웠음. 짐을 막 옮기다 버스를 탔는데 땀이 삐질 났음.. (다시 입기: 아마도)","outfitId":"legacy-1"},{"row":3,"date":"2026-11-24","dow":"화","min":-2,"max":3,"weather":"맑음","ids":{"outer":"O04","top":"T48","bottom":"B29","shoes":"S01","bag":"A03","a1":"A09","a2":"A21","a3":""},"sit":"출근","score":7,"memo":"바람이 부니 꽤 추웠음. 럭비 셔츠는 처음 입어봤는데 꽤 마음에 들었음. 카펜터 바지는 처음 입었는데 허리와 기장이 크고 긺. 벨트가 필수임. 오늘 바닥에 옷이 끌릴 것 같아서 롤업해서 입음. (다시 입기: 예)","outfitId":"legacy-2"}];       // 착장 기록
+const SNAPSHOT_REVIEWS = [];
+const ATTRS = {"O01":{"subtype":"스탠드카라 집업 재킷","colors":["darkbrown"],"pattern":"무지","fit":"미확인","warmth":6,"rain_caution":"스웨이드","style_tags":["러기드 워크웨어","아메리칸 헤리티지"],"roles":["outer"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","color_status":""},"O02":{"subtype":"무톤 재킷","colors":["darkbrown","camel"],"pattern":"배색","fit":"미확인","warmth":10,"rain_caution":"스웨이드","style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["outer"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","color_status":""},"O03":{"subtype":"데님 집업 블루종","colors":["indigo","lightgray"],"pattern":"스티치","fit":"미확인","warmth":6,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["outer"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"실물 사진에서 워싱된 슬레이트 블루 기운. 원래 인디고 표기 유지.","fit_feedback":"","rain_caution":"","color_status":""},"O04":{"subtype":"레더 블루종","colors":["black"],"pattern":"무지","fit":"오버핏","warmth":6,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["outer"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"O05":{"subtype":"후드 집업","colors":["cream","purple"],"pattern":"라인","fit":"미확인","warmth":5,"style_tags":["데일리"],"roles":["outer","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"O06":{"subtype":"싱글 블레이저","colors":["black"],"pattern":"무지","fit":"미확인","warmth":6,"style_tags":["헤리티지 출근룩"],"roles":["outer"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"O07":{"subtype":"컷오프 데님 재킷","colors":["blue"],"pattern":"워싱","fit":"미확인","warmth":6,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["outer"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"청자켓보다 미디엄 블루 컷오프 데님 재킷이 검색에 유리.","fit_feedback":"","rain_caution":"","color_status":""},"O08":{"subtype":"후드 숏패딩","colors":["black"],"pattern":"무지","fit":"미확인","warmth":9,"style_tags":["데일리"],"roles":["outer"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"첫 사진 라벨 중심 → 두 번째를 대표로 지정.","fit_feedback":"","rain_caution":"","color_status":""},"O09":{"subtype":"퀼팅 MA-1 봄버","colors":["charcoal","black"],"pattern":"무지","fit":"미확인","warmth":7,"style_tags":["데일리"],"roles":["outer"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"O10":{"subtype":"후드 다운 롱패딩","colors":["black"],"pattern":"퀼팅","fit":"미확인","warmth":10,"style_tags":["데일리"],"roles":["outer"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"O11":{"subtype":"셔츠카라 하프 재킷","colors":["black"],"pattern":"무지","fit":"오버핏","warmth":8,"style_tags":["데일리"],"roles":["outer"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"O12":{"subtype":"보아 안감 집업","colors":["black","cream"],"pattern":"배색","fit":"미확인","warmth":8,"style_tags":["데일리"],"roles":["outer"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"O13":{"subtype":"싱글 롱코트","colors":["taupe","beige"],"pattern":"헤링본","fit":"미확인","warmth":8,"style_tags":["헤리티지 출근룩"],"roles":["outer"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"베이지보다 그레이지/토프에 가까워 보임. 실물 확인 권장.","fit_feedback":"","rain_caution":"","color_status":""},"O14":{"subtype":"패딩 하프코트","colors":["beige"],"pattern":"무지","fit":"미확인","warmth":8,"style_tags":["헤리티지 출근룩"],"roles":["outer"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"택 카키와 실물 베이지 구분.","fit_feedback":"","rain_caution":"","color_status":""},"O15":{"subtype":"로고 후드 집업","colors":["navy"],"pattern":"로고","fit":"미확인","warmth":5,"style_tags":["데일리"],"roles":["outer","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"O16":{"subtype":"AFA 트랙 재킷","colors":["white","black","lightblue"],"pattern":"로고","fit":"미확인","warmth":4,"style_tags":["데일리"],"roles":["outer","mid"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"원래 이름의 AFA 괄호/상세 분리 오류 수정 제안.","fit_feedback":"","rain_caution":"","color_status":""},"O17":{"subtype":"스냅 후드 집업","colors":["lightgray"],"pattern":"로고","fit":"미확인","warmth":5,"style_tags":["데일리"],"roles":["outer","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"O18":{"subtype":"경량 퀼팅 베스트","colors":["black","gray"],"pattern":"퀼팅","fit":"미확인","warmth":6,"style_tags":["데일리"],"roles":["outer","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T01":{"subtype":"리브드 크루넥 니트","colors":["cream"],"pattern":"골지","fit":"미확인","warmth":5,"style_tags":["헤리티지 출근룩"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T02":{"subtype":"와플 니트","colors":["sage"],"pattern":"와플","fit":"미확인","warmth":5,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","헤리티지 출근룩"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T03":{"subtype":"와플 긴팔 티셔츠","colors":["cream"],"pattern":"와플","fit":"미확인","warmth":5,"style_tags":["러기드 워크웨어","아메리칸 헤리티지"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T04":{"subtype":"피그먼트 와플 긴팔","colors":["charcoal"],"pattern":"와플","fit":"미확인","warmth":5,"style_tags":["러기드 워크웨어","아메리칸 헤리티지"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T05":{"subtype":"헨리넥 니트","colors":["darkbrown"],"pattern":"무지","fit":"미확인","warmth":6,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","헤리티지 출근룩","모던 프런티어"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T06":{"subtype":"헨리넥 니트","colors":["black"],"pattern":"무지","fit":"미확인","warmth":6,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","헤리티지 출근룩","모던 프런티어"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T07":{"subtype":"래글런 크루넥 니트","colors":["charcoal"],"pattern":"무지","fit":"미확인","warmth":6,"style_tags":["헤리티지 출근룩"],"roles":["mid"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"사진상 블랙보다는 차콜 또는 블루블랙에 가까움. 실물 확인.","fit_feedback":"","rain_caution":"","color_status":""},"T08":{"subtype":"하프집업 스웨트셔츠","colors":["cream"],"pattern":"로고","fit":"루즈핏","warmth":5,"style_tags":["데일리"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T09":{"subtype":"프린트 스웨트셔츠","colors":["lightgray","navy"],"pattern":"로고","fit":"오버사이즈","warmth":5,"style_tags":["데일리"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T10":{"subtype":"옥스퍼드 긴팔 셔츠","colors":["white"],"pattern":"무지","fit":"오버핏","warmth":4,"style_tags":["헤리티지 출근룩"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T11":{"subtype":"버튼다운 긴팔 셔츠","colors":["white"],"pattern":"무지","fit":"미확인","warmth":3,"style_tags":["데일리"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T12":{"subtype":"드레스 셔츠","colors":["white"],"pattern":"무지","fit":"미확인","warmth":3,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T13":{"subtype":"샴브레이 긴팔 셔츠","colors":["bluegray"],"pattern":"무지","fit":"오버사이즈","warmth":4,"style_tags":["데일리"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"저채도 라이트 블루그레이, 빳빳함은 사용자 기록.","fit_feedback":"","rain_caution":"","color_status":""},"T14":{"subtype":"워싱 데님 긴팔 셔츠","colors":["gray"],"pattern":"워싱","fit":"오버사이즈","warmth":4,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"T13 동일제품 색상 변형.","fit_feedback":"","rain_caution":"","color_status":""},"T15":{"subtype":"마이크로 체크 긴팔 셔츠","colors":["gray","pink"],"pattern":"체크","fit":"오버핏","warmth":4,"style_tags":["데일리"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"사진 조명상 그레이 우세, 핑크는 원 기록 유지.","fit_feedback":"","rain_caution":"","color_status":""},"T16":{"subtype":"시어서커 반팔 셔츠","colors":["lightblue"],"pattern":"무지","fit":"오버핏","warmth":2,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":2,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T17":{"subtype":"시어서커 반팔 셔츠","colors":["navy"],"pattern":"무지","fit":"오버핏","warmth":2,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T18":{"subtype":"시어서커 반팔 셔츠","colors":["white"],"pattern":"무지","fit":"오버핏","warmth":2,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T19":{"subtype":"반팔 셔츠","colors":["white"],"pattern":"무지","fit":"오버핏","warmth":2,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T20":{"subtype":"옥스퍼드 반팔 셔츠","colors":["lightblue"],"pattern":"무지","fit":"미확인","warmth":2,"style_tags":["헤리티지 출근룩"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T21":{"subtype":"시어서커 투포켓 반팔 셔츠","colors":["bluegray"],"pattern":"무지","fit":"미확인","warmth":2,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"거의 그레이에 가까운 저채도 블루.","fit_feedback":"","rain_caution":"","color_status":""},"T22":{"subtype":"반팔 셔츠","colors":["yellow"],"pattern":"무지","fit":"미확인","warmth":2,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T23":{"subtype":"샴브레이 반팔 셔츠","colors":["pink"],"pattern":"무지","fit":"미확인","warmth":2,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T24":{"subtype":"반팔 셔츠","colors":["charcoal"],"pattern":"무지","fit":"레귤러","warmth":2,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"사진상 차콜에 가까움. 실제 블랙일 수 있음.","fit_feedback":"","rain_caution":"","color_status":""},"T25":{"subtype":"데님 투포켓 반팔 셔츠","colors":["indigo"],"pattern":"무지","fit":"미확인","warmth":3,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T26":{"subtype":"V넥 니트 가디건","colors":["beige"],"pattern":"무지","fit":"미확인","warmth":5,"style_tags":["헤리티지 출근룩"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T27":{"subtype":"V넥 니트 베스트","colors":["navy","lightgray","white"],"pattern":"라인","fit":"미확인","warmth":6,"style_tags":["헤리티지 출근룩"],"roles":["mid"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"T29와 공동 사진. 왼쪽 네이비.","fit_feedback":"","rain_caution":"","color_status":""},"T28":{"subtype":"V넥 골지 니트 베스트","colors":["beige"],"pattern":"골지","fit":"미확인","warmth":5,"style_tags":["헤리티지 출근룩"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T29":{"subtype":"V넥 니트 베스트","colors":["cream","navy","olive"],"pattern":"라인","fit":"미확인","warmth":6,"style_tags":["헤리티지 출근룩"],"roles":["mid"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"T27과 공동 사진. 오른쪽 아이보리.","fit_feedback":"","rain_caution":"","color_status":""},"T30":{"subtype":"레이어드 넥 티셔츠","colors":["brown","cream"],"pattern":"배색","fit":"미확인","warmth":3,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T31":{"subtype":"링거 레이어드 티셔츠","colors":["navy","cream"],"pattern":"배색","fit":"미확인","warmth":3,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T32":{"subtype":"크루넥 코튼 니트","colors":["bluegray"],"pattern":"무지","fit":"미확인","warmth":6,"style_tags":["헤리티지 출근룩"],"roles":["mid"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"사진에서 밝은 블루그레이로 보임.","fit_feedback":"","rain_caution":"","color_status":""},"T33":{"subtype":"스트라이프 긴팔 티셔츠","colors":["white","black"],"pattern":"스트라이프","fit":"미확인","warmth":4,"style_tags":["데일리"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T34":{"subtype":"체크 반팔 셔츠","colors":["charcoal","gray"],"pattern":"체크","fit":"미확인","warmth":2,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T35":{"subtype":"로고 긴팔 티셔츠","colors":["purple","yellow"],"pattern":"로고","fit":"미확인","warmth":4,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"고채도 블루 바이올렛. 사진 조명 확인 필요.","fit_feedback":"","rain_caution":"","color_status":""},"T36":{"subtype":"로고 후드티","colors":["lightgray","black"],"pattern":"로고","fit":"미확인","warmth":5,"style_tags":["데일리"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T37":{"subtype":"크루넥 긴팔 티셔츠","colors":["navy"],"pattern":"무지","fit":"미확인","warmth":3,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T38":{"subtype":"크루넥 긴팔 티셔츠","colors":["black"],"pattern":"무지","fit":"미확인","warmth":3,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T39":{"subtype":"로고 스웨트셔츠","colors":["black","white"],"pattern":"로고","fit":"미확인","warmth":5,"style_tags":["데일리"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T40":{"subtype":"스트라이프 긴팔 티셔츠","colors":["black","white","red"],"pattern":"스트라이프","fit":"미확인","warmth":4,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T41":{"subtype":"로고 긴팔 티셔츠","colors":["charcoal","white"],"pattern":"로고","fit":"미확인","warmth":4,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"페이드 블랙/차콜.","fit_feedback":"","rain_caution":"","color_status":""},"T42":{"subtype":"피케 반팔 폴로","colors":["white"],"pattern":"로고","fit":"미확인","warmth":2,"style_tags":["헤리티지 출근룩"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T43":{"subtype":"로고 반팔 티셔츠","colors":["green","red","white"],"pattern":"로고","fit":"레귤러","warmth":1,"style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T44":{"subtype":"반팔 티셔츠 묶음","colors":["unknown"],"pattern":"미확인","fit":"미확인","style_tags":["데일리"],"roles":["base"],"availability":"착용 가능","color_confidence":"미확인","review_note":"사진 없음 유지. 개별 색상/핏 미확인.","warmth":1,"fit_feedback":"","rain_caution":"","color_status":"","quantity":null},"T45":{"subtype":"피케 긴팔 폴로","colors":["white","navy","red"],"pattern":"로고","fit":"미확인","warmth":4,"style_tags":["헤리티지 출근룩"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T46":{"subtype":"피케 긴팔 폴로","colors":["navy","red","yellow"],"pattern":"로고","fit":"미확인","warmth":4,"style_tags":["헤리티지 출근룩"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T47":{"subtype":"크루넥 코튼 니트","colors":["gray"],"pattern":"무지","fit":"미확인","warmth":5,"style_tags":["헤리티지 출근룩"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T48":{"subtype":"배색 럭비 셔츠","colors":["navy","cream"],"pattern":"배색","fit":"미확인","warmth":5,"style_tags":["헤리티지 출근룩"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T49":{"subtype":"로고 스웨트셔츠","colors":["cream"],"pattern":"로고","fit":"미확인","warmth":5,"style_tags":["데일리"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T50":{"subtype":"스웨트셔츠","colors":["orange"],"pattern":"무지","fit":"미확인","warmth":5,"style_tags":["데일리"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"T51":{"subtype":"기모 패치 스웨트셔츠","colors":["beige"],"pattern":"패치","fit":"미확인","warmth":6,"style_tags":["데일리"],"roles":["mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B01":{"subtype":"원턱 와이드 슬랙스","colors":["charcoal"],"pattern":"무지","fit":"와이드","warmth":5,"style_tags":["헤리티지 출근룩"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B02":{"subtype":"원턱 와이드 슬랙스","colors":["black"],"pattern":"무지","fit":"와이드","warmth":3,"style_tags":["헤리티지 출근룩"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B03":{"subtype":"슬랙스","colors":["black"],"pattern":"무지","fit":"미확인","warmth":3,"style_tags":["헤리티지 출근룩"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B04":{"subtype":"원턱 슬랙스","colors":["beige"],"pattern":"무지","fit":"미확인","warmth":3,"style_tags":["헤리티지 출근룩"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B05":{"subtype":"슬랙스","colors":["taupe"],"pattern":"무지","fit":"미확인","warmth":4,"style_tags":["헤리티지 출근룩"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"토프/웜그레이.","fit_feedback":"","rain_caution":"","color_status":""},"B06":{"subtype":"슬랙스","colors":["charcoal"],"pattern":"무지","fit":"미확인","warmth":3,"style_tags":["헤리티지 출근룩"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B07":{"subtype":"워싱 데님","colors":["lightblue"],"pattern":"워싱","fit":"스트레이트~슬림 (사용자 체감)","warmth":4,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B08":{"subtype":"생지 와이드 스트레이트 데님","colors":["indigo"],"pattern":"무지","fit":"와이드 스트레이트","warmth":5,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B09":{"subtype":"슬림 데님","colors":["black"],"pattern":"무지","fit":"슬림 (사용자 체감)","warmth":3,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B10":{"subtype":"세미 벌룬 트위스트 데님","colors":["black"],"pattern":"무지","fit":"세미 벌룬","warmth":5,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B11":{"subtype":"와이드 스트레이트 데님","colors":["lightgray"],"pattern":"워싱","fit":"와이드 스트레이트","warmth":4,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B12":{"subtype":"하프밴딩 코튼 팬츠","colors":["beige"],"pattern":"무지","fit":"미확인","warmth":2,"style_tags":["데일리"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B13":{"subtype":"면·린넨 이지 팬츠","colors":["cream"],"pattern":"무지","fit":"미확인","warmth":2,"style_tags":["데일리"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B14":{"subtype":"히든 밴딩 치노","colors":["cream"],"pattern":"무지","fit":"레귤러","warmth":4,"style_tags":["헤리티지 출근룩"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B15":{"subtype":"캔버스 카펜터 팬츠","colors":["olive"],"pattern":"무지","fit":"미확인","warmth":5,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"회색 기운 있는 카키.","fit_feedback":"","rain_caution":"","color_status":""},"B16":{"subtype":"와이드 스웨트팬츠","colors":["lightgray"],"pattern":"무지","fit":"와이드","warmth":3,"style_tags":["데일리"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B17":{"subtype":"엑스트라 와이드 워싱 데님","colors":["gray"],"pattern":"워싱","fit":"엑스트라 와이드","warmth":3,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B18":{"subtype":"삼선 트랙팬츠","colors":["black","white"],"pattern":"라인","fit":"미확인","warmth":5,"style_tags":["데일리"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B19":{"subtype":"퍼티그 팬츠","colors":["black"],"pattern":"무지","fit":"미확인","warmth":4,"style_tags":["러기드 워크웨어","아메리칸 헤리티지"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B20":{"subtype":"프린트 스웨트팬츠","colors":["black"],"pattern":"로고","fit":"미확인","warmth":4,"style_tags":["데일리"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B21":{"subtype":"밴딩 스웨트팬츠","colors":["black"],"pattern":"무지","fit":"미확인","warmth":4,"style_tags":["데일리"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B22":{"subtype":"스웨트팬츠","colors":["charcoal"],"pattern":"무지","fit":"미확인","warmth":4,"style_tags":["데일리"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B23":{"subtype":"밴딩 테이퍼드 슬랙스","colors":["black"],"pattern":"무지","fit":"테이퍼드","warmth":3,"style_tags":["헤리티지 출근룩"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B24":{"subtype":"워싱 스트레이트 데님","colors":["blue"],"pattern":"워싱","fit":"스트레이트","warmth":4,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"사진에서 미디엄 블루에 가까움, 원래 라이트 블루 기록 보존.","fit_feedback":"","rain_caution":"","color_status":""},"B25":{"subtype":"워싱 와이드 데님","colors":["lightblue"],"pattern":"워싱","fit":"와이드","warmth":4,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B26":{"subtype":"원턱 밴딩 와이드 데님","colors":["indigo"],"pattern":"스티치","fit":"와이드","warmth":3,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B27":{"subtype":"피그먼트 원턱 와이드 스웨트팬츠","colors":["graybrown"],"pattern":"무지","fit":"와이드","warmth":5,"style_tags":["데일리"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"판매 이미지에서 저채도 회갈색.","fit_feedback":"","rain_caution":"","color_status":""},"B28":{"subtype":"코듀로이 와이드 밴딩 팬츠","colors":["darkbrown"],"pattern":"골지","fit":"와이드","warmth":5,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"B29":{"subtype":"피그먼트 더블니 카펜터 데님","colors":["brown"],"pattern":"워싱","fit":"와이드","warmth":5,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["bottom"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"S01":{"subtype":"로우탑 캐주얼 스니커즈","colors":["brown","cream"],"pattern":"배색","fit":"미확인","style_tags":["데일리"],"roles":["shoes"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"브라운·크림 투톤. 정확한 소재 미확인.","warmth":4,"fit_feedback":"","rain_caution":"","color_status":""},"S02":{"subtype":"스웨이드 독일군 스니커즈","colors":["black"],"pattern":"무지","fit":"미확인","rain_caution":"스웨이드","style_tags":["데일리"],"roles":["shoes"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","warmth":5,"fit_feedback":"","color_status":""},"S03":{"subtype":"레더 코트 스니커즈","colors":["white"],"pattern":"무지","fit":"미확인","style_tags":["러기드 워크웨어","아메리칸 헤리티지","헤리티지 출근룩","모던 프런티어"],"roles":["shoes"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","warmth":4,"fit_feedback":"","rain_caution":"","color_status":""},"S04":{"subtype":"레트로 독일군형 스니커즈","colors":["cream","lightgray","gum"],"pattern":"배색","fit":"미확인","style_tags":["데일리"],"roles":["shoes"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"오프화이트/라이트그레이, 검솔. 정확한 모델 미확인.","warmth":4,"fit_feedback":"","rain_caution":"","color_status":""},"A01":{"subtype":"브레이디드 스트레치 벨트","colors":["black","camel","silver"],"pattern":"편조","fit":"미확인","style_tags":["데일리"],"roles":["belt"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"A02와 공동 사진. 상단이 블랙.","warmth":null,"fit_feedback":"","rain_caution":"","color_status":""},"A02":{"subtype":"브레이디드 스트레치 벨트","colors":["darkbrown","camel","silver"],"pattern":"편조","fit":"미확인","style_tags":["데일리"],"roles":["belt"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"A01과 공동 사진. 하단이 브라운.","warmth":null,"fit_feedback":"","rain_caution":"","color_status":""},"A03":{"subtype":"각진 출퇴근 가방","colors":["black"],"pattern":"미확인","fit":"미확인","style_tags":["데일리"],"roles":["bag"],"availability":"착용 가능","color_confidence":"미확인","quantity":1,"review_note":"사진 없음 유지. 기존 기록 기준.","warmth":null,"fit_feedback":"","rain_caution":"","color_status":""},"A04":{"subtype":"코팅 캔버스 서류가방","colors":["darkbrown","black"],"pattern":"배색","fit":"미확인","style_tags":["헤리티지 출근룩"],"roles":["bag"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"상품 사진 몸판은 거의 블랙. 다크 브라운 실제 옵션 재확인.","warmth":null,"fit_feedback":"","rain_caution":"","color_status":""},"A05":{"subtype":"가죽 장갑","colors":["darkbrown"],"pattern":"무지","fit":"미확인","warmth":9,"style_tags":["데일리"],"roles":["gloves"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A06":{"subtype":"핑거홀 니트 장갑","colors":["darkbrown"],"pattern":"무지","fit":"미확인","warmth":6,"style_tags":["헤리티지 출근룩"],"roles":["gloves"],"availability":"사용 불가","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A07":{"subtype":"핑거홀 니트 장갑","colors":["black"],"pattern":"무지","fit":"미확인","warmth":6,"style_tags":["헤리티지 출근룩"],"roles":["gloves"],"availability":"사용 불가","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A08":{"subtype":"체크 램스울 머플러","colors":["olive","taupe","cream","darkbrown"],"pattern":"체크","fit":"미확인","warmth":7,"style_tags":["헤리티지 출근룩"],"roles":["scarf"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A09":{"subtype":"빈티지 가죽 벨트","colors":["darkbrown","silver"],"pattern":"워싱","fit":"미확인","style_tags":["데일리"],"roles":["belt"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","warmth":null,"fit_feedback":"","rain_caution":"","color_status":""},"A10":{"subtype":"사피아노 가죽 벨트","colors":["darkbrown","silver"],"pattern":"사피아노","fit":"미확인","style_tags":["데일리"],"roles":["belt"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","warmth":null,"fit_feedback":"","rain_caution":"","color_status":""},"A11":{"subtype":"브레이디드 가죽 벨트","colors":["darkbrown","silver"],"pattern":"편조","fit":"미확인","style_tags":["데일리"],"roles":["belt"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","warmth":null,"fit_feedback":"","rain_caution":"","color_status":""},"A12":{"subtype":"리브 커프 니트 장갑","colors":["charcoal"],"pattern":"무지","fit":"미확인","warmth":6,"style_tags":["헤리티지 출근룩"],"roles":["gloves"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A13":{"subtype":"퍼 귀덮개 트래퍼 햇","colors":["cream","gray","darkbrown"],"pattern":"배색","fit":"미확인","warmth":8,"style_tags":["러기드 워크웨어","아메리칸 헤리티지"],"roles":["hat"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"트래퍼 햄 → 트래퍼 햇.","fit_feedback":"","rain_caution":"","color_status":""},"A14":{"subtype":"리브 니트 바라클라바","colors":["charcoal"],"pattern":"골지","fit":"미확인","warmth":7,"style_tags":["헤리티지 출근룩"],"roles":["hat"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A15":{"subtype":"앙고라 혼방 머플러","colors":["camel"],"pattern":"무지","fit":"미확인","warmth":8,"style_tags":["헤리티지 출근룩"],"roles":["scarf"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A16":{"subtype":"체크 머플러","colors":["bluegray","navy","gray"],"pattern":"체크","fit":"미확인","warmth":6,"style_tags":["헤리티지 출근룩"],"roles":["scarf"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A17":{"subtype":"체크 캐시미어 머플러","colors":["gray","black","cream","lightblue"],"pattern":"체크","fit":"미확인","warmth":7,"style_tags":["헤리티지 출근룩"],"roles":["scarf"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A18":{"subtype":"체크 머플러","colors":["navy","brown","cream"],"pattern":"체크","fit":"미확인","warmth":6,"style_tags":["헤리티지 출근룩"],"roles":["scarf"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A19":{"subtype":"롱 헤링본 니트 머플러","colors":["charcoal","gray"],"pattern":"헤링본","fit":"미확인","warmth":9,"style_tags":["헤리티지 출근룩"],"roles":["scarf"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"두껍고 길어 큰 후드 아우터와 부피 주의.","fit_feedback":"","rain_caution":"","color_status":""},"A20":{"subtype":"캐시미어 머플러","colors":["purple"],"pattern":"무지","fit":"미확인","warmth":7,"style_tags":["헤리티지 출근룩"],"roles":["scarf"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"A21":{"subtype":"롱 스트라이프 니트 머플러","colors":["navy","bluegray","gray"],"pattern":"스트라이프","fit":"미확인","warmth":9,"style_tags":["헤리티지 출근룩"],"roles":["scarf"],"availability":"착용 가능","color_confidence":"재확인","quantity":1,"review_note":"두껍고 길어 큰 후드 아우터와 부피 주의.","fit_feedback":"","rain_caution":"","color_status":""},"T52":{"subtype":"옴브레 플란넬 셔츠","colors":["graybrown","beige","charcoal"],"pattern":"체크","fit":"미확인","warmth":5,"style_tags":["러기드 워크웨어","아메리칸 헤리티지","모던 프런티어"],"roles":["base","mid"],"availability":"착용 가능","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","fit_feedback":"","rain_caution":"","color_status":""},"S05":{"subtype":"쿠션 러닝화","colors":["white","black","silver"],"pattern":"배색","fit":"미확인","style_tags":["데일리"],"roles":["shoes"],"availability":"사용 불가","color_confidence":"사진 추정","quantity":1,"review_note":"대표 사진과 기존 설명 비교. 실물 색상은 미검증.","warmth":3,"fit_feedback":"","rain_caution":"","color_status":""},"A22":{"subtype":"솔리드 양말 묶음","colors":["mixed","white","black","navy","gray","brown","graybrown","olive","cream","green"],"pattern":"무지","fit":"미확인","style_tags":["데일리"],"roles":["socks"],"availability":"착용 가능","color_confidence":"재확인","review_note":"9색 묶음. 기존/배송 예정 혼재: 보유 색상만 활용.","warmth":null,"fit_feedback":"","rain_caution":"","color_status":"화이트 보유, 블랙 보유, 네이비 보유, 그레이 보유, 브라운 주문(배송 전), 코코아 주문(배송 전), 카키 주문(배송 전), 오트밀 주문(배송 전), 딥그린 주문(배송 전)","quantity":null},"B30":{"subtype":"이너 레깅스(히트텍)","colors":["unknown"],"pattern":"무지","roles":["under"],"availability":"착용 가능","warmth":null,"fit":"미확인","fit_feedback":"","style_tags":["데일리"],"rain_caution":"","color_confidence":"미확인","review_note":"사진 없음","color_status":"","quantity":1}};            // 세부 종류·색·패턴·핏·보온… (sheet I~X)
+const PALETTE = {"black":["#242528","블랙"],"charcoal":["#46494e","차콜"],"gray":["#85888b","그레이"],"lightgray":["#c3c5c4","라이트 그레이"],"white":["#f4f3ef","화이트"],"cream":["#e8e3d3","크림·아이보리"],"beige":["#c6b9a2","베이지"],"taupe":["#a69b8f","토프·그레이지"],"brown":["#76553e","브라운"],"darkbrown":["#49372d","다크 브라운"],"camel":["#b38a58","카멜"],"graybrown":["#6c6257","그레이시 브라운"],"navy":["#26384f","네이비"],"indigo":["#34445b","인디고"],"blue":["#57728d","미디엄 블루"],"lightblue":["#a9bdd2","라이트 블루"],"bluegray":["#9daab5","블루그레이"],"olive":["#777b60","올리브·카키"],"sage":["#9ba797","세이지"],"green":["#315e54","딥그린"],"purple":["#5c52a3","바이올렛"],"pink":["#bf637e","핑크"],"yellow":["#e8df9e","옐로"],"red":["#a94741","레드"],"orange":["#b98060","테라코타"],"silver":["#b9b9b8","실버"],"gum":["#aa875c","검솔"],"unknown":["#a4a4a4","미확인"],"mixed":["#b0a695","다색 묶음"]};            // key -> [hex,label]
+const PHOTOS = {"A01":1,"A02":1,"A04":1,"A05":1,"A06":1,"A07":1,"A08":1,"A09":1,"A10":1,"A11":1,"A12":1,"A13":1,"A14":1,"A15":2,"A16":2,"A17":2,"A18":1,"A19":2,"A20":2,"A21":3,"A22":1,"B01":2,"B02":2,"B03":2,"B04":2,"B05":2,"B06":2,"B07":2,"B08":2,"B09":2,"B10":1,"B11":2,"B12":2,"B13":2,"B14":3,"B15":2,"B16":2,"B17":3,"B18":2,"B19":2,"B20":2,"B21":2,"B22":2,"B23":2,"B24":2,"B25":2,"B26":2,"B27":1,"B28":1,"B29":1,"O01":1,"O02":1,"O03":2,"O04":1,"O05":1,"O06":1,"O07":2,"O08":2,"O09":2,"O10":2,"O11":1,"O12":1,"O13":1,"O14":2,"O15":2,"O16":2,"O17":1,"O18":1,"S01":1,"S02":2,"S03":1,"S04":1,"S05":1,"T01":1,"T02":2,"T03":2,"T04":2,"T05":1,"T06":1,"T07":1,"T08":2,"T09":2,"T10":2,"T11":1,"T12":2,"T13":1,"T14":1,"T15":2,"T16":2,"T17":1,"T18":1,"T19":1,"T20":1,"T21":1,"T22":1,"T23":1,"T24":2,"T25":1,"T26":2,"T27":1,"T28":2,"T29":1,"T30":1,"T31":1,"T32":2,"T33":2,"T34":2,"T35":2,"T36":1,"T37":2,"T38":2,"T39":2,"T40":2,"T41":2,"T42":2,"T43":1,"T45":2,"T46":2,"T47":2,"T48":2,"T49":2,"T50":2,"T51":2,"T52":1};
+const SNAPSHOT_DATE = "2026-11-24";
+
+const CATS=["아우터","상의","하의","신발","가방","벨트","장갑","목도리","모자","양말"];
+const PREFIX={"아우터":"O","상의":"T","하의":"B","신발":"S"};
+const ROLE={outer:"아우터",base:"이너",mid:"미들레이어",bottom:"하의",shoes:"신발",bag:"가방",belt:"벨트",scarf:"목도리",gloves:"장갑",hat:"모자",socks:"양말",under:"하의 이너",other:"기타"};
+const CAT_ROLES={"아우터":["outer","mid"],"상의":["base","mid"],"하의":["bottom"],"신발":["shoes"],"가방":["bag"],"벨트":["belt"],"목도리":["scarf"],"장갑":["gloves"],"모자":["hat"],"양말":["socks"]};
+const PATTERNS=["무지","체크","스트라이프","헤링본","골지","와플","로고","배색","워싱","라인","퀼팅","편조","스티치","패치","미확인"];
+const FITS=["미확인","레귤러","오버핏","오버사이즈","루즈핏","와이드","와이드 스트레이트","엑스트라 와이드","세미 벌룬","스트레이트","테이퍼드","슬림"];
+const DOW=["일","월","화","수","목","금","토"];
+
+// ================= helpers =================
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function lsSet(k,v){try{localStorage.setItem("hs2_"+k,JSON.stringify(v))}catch(e){}}
+function lsGet(k,d){try{const v=localStorage.getItem("hs2_"+k);return v==null?d:JSON.parse(v)}catch(e){return d}}
+function todayKST(){return new Date(Date.now()+9*3600e3).toISOString().slice(0,10)}
+function dowOf(s){const d=new Date(s+"T00:00:00Z");return isNaN(d)?"":DOW[d.getUTCDay()]}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function toast(s){const t=$("toast");t.textContent=s;t.hidden=false;clearTimeout(t._t);t._t=setTimeout(()=>t.hidden=true,2600)}
+const color=k=>(PALETTE[k]||PALETTE.unknown||["#aaa"])[0];
+const clabel=k=>(PALETTE[k]||["","미확인"])[1];
+function safeUrl(u){u=String(u||"");if(u.startsWith("local:"))return LOCALPH.get(u.slice(6))||"";return /^(https:\/\/|\/_blob\/|img\/)/.test(u)?u:""}
+
+// ================= store: db when available, else this browser =================
+// collections: changes (pending edits to bring into the sheet), favorites. doc app/snapshot (optional fresher data written by Claude)
+const Store={db:null,mem:{changes:{},favorites:{}},
+  async init(){
+    try{const db=null;if(db){this.db=db;
+      const tm=setTimeout(()=>{},10000);
+      for(const c of ["changes","favorites"]){const s=await db.collection(c).get();this.mem[c]={};s.docs.forEach(d=>this.mem[c][d.id]=d.data())}
+      try{const s=await db.doc("app/snapshot").get();if(s.exists)applyRemoteSnapshot(s.data())}catch(e){}
+      clearTimeout(tm);return}}catch(e){this.db=null}
+    this.mem.changes=lsGet("changes",{});this.mem.favorites=lsGet("favorites",{});
+  },
+  all(c){return Object.entries(this.mem[c]).map(([id,v])=>({_id:id,...v}))},
+  get(c,id){return this.mem[c][id]},
+  async set(c,id,v){this.mem[c][id]=v;if(this.db){await this.db.collection(c).doc(id).set(v)}else lsSet(c,this.mem[c])},
+  async del(c,id){delete this.mem[c][id];if(this.db){await this.db.collection(c).doc(id).delete()}else lsSet(c,this.mem[c])},
+};
+let ASSETS=null, DOWNLOADS=null; const LOCALPH=new Map();
+const IDB={db:null,open(){return new Promise((ok,no)=>{const q=indexedDB.open("heritage",1);q.onupgradeneeded=()=>q.result.createObjectStore("photos");q.onsuccess=()=>{this.db=q.result;ok()};q.onerror=()=>no(q.error)})},
+  tx(m){return this.db.transaction("photos",m).objectStore("photos")},
+  put(k,v){return new Promise((ok,no)=>{const q=this.tx("readwrite").put(v,k);q.onsuccess=()=>ok();q.onerror=()=>no(q.error)})},
+  all(){return new Promise((ok,no)=>{const s=this.tx("readonly"),ks=s.getAllKeys(),vs=s.getAll();vs.onsuccess=()=>ok(ks.result.map((k,i)=>[k,vs.result[i]]));vs.onerror=()=>no(vs.error)})}};
+function shrink(file){return new Promise((ok,no)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const m=1200,s=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?ok(b):no(new Error("x")),"image/jpeg",0.82)};im.onerror=no;im.src=u})}
+const LocalAssets={async upload(f){const b=await shrink(f),id=uid();await IDB.put(id,b);LOCALPH.set(id,URL.createObjectURL(b));return {id,url:"local:"+id}}};
+const LocalDownloads={async save({filename,data}){const a=document.createElement("a");a.href=URL.createObjectURL(data);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}};
+
+// ================= model =================
+let BASE_ITEMS=[], ITEMS=[], byId=new Map(), BASE_LOG=[], LOG=[], REVIEWS={}, snapLabel=SNAPSHOT_DATE;
+function rowToItem(r){const [id,cat,name,detail,season,status,note]=r;return {id,cat,name,detail:detail||"",season:season||"",status:status||"",note:note||"",...(ATTRS[id]||{})}}
+function sheetLogToRec(r){
+  const ids=r.ids||{};const items=[];
+  const push=(id,role)=>{if(id)items.push({id,role})};
+  push(ids.outer,"outer");push(ids.top,"base");push(ids.bottom,"bottom");push(ids.shoes,"shoes");push(ids.bag,"bag");
+  for(const k of ["a1","a2","a3"])if(ids[k])items.push({id:ids[k],role:""});
+  return {key:r.date,date:r.date,occasion:r.sit||"",rating:r.score??null,weather:{min:r.min??null,max:r.max??null,condition:r.weather||"",wind:/강풍|바람/.test(r.memo||"")?"강풍":""},items,note:r.memo||"",feedback:{},photos:[],styling:{},legacy:r.outfitId||""};
+}
+function applyRemoteSnapshot(s){
+  // Claude can write {date, items:[{id,cat,name,detail,season,status,note,...attrs}], log:[sheet-shaped rows], reviews:[...]} to app/snapshot
+  if(!s||!Array.isArray(s.items)||s.items.length<10)return;
+  BASE_ITEMS=s.items.map(o=>({...(ATTRS[o.id]||{}),...o}));
+  if(Array.isArray(s.log))BASE_LOG=s.log.map(sheetLogToRec);
+  if(Array.isArray(s.reviews))REVIEWS=Object.fromEntries(s.reviews.map(r=>[r.date,r]));
+  snapLabel=s.date||snapLabel;
+}
+function rebuild(){
+  const ch=Store.all("changes");
+  const items=BASE_ITEMS.map(x=>({...x}));const idx=new Map(items.map((x,i)=>[x.id,i]));
+  for(const c of ch.filter(c=>c.kind==="item")){const d=c.data;if(!d||!d.id)continue;
+    const v={...d,pending:c.status!=="synced"};if(idx.has(d.id))items[idx.get(d.id)]={...items[idx.get(d.id)],...v};else{idx.set(d.id,items.length);items.push(v)}}
+  ITEMS=items;byId=new Map(ITEMS.map(i=>[i.id,i]));
+  const log=new Map(BASE_LOG.map(r=>[r.date,{...r}]));
+  // synced changes stay merged (the sheet has no columns for detail scores, tags or photos), just without the "반영 대기" mark
+  for(const c of ch.filter(c=>c.kind==="record")){const d=c.data;if(!d||!d.date)continue;const b=log.get(d.date);
+    // pending: app edit wins. synced: the sheet is the source again (the user may have edited it), keep only photos/styling from the app
+    log.set(d.date,c.status==="synced"&&b?{...b,photos:d.photos||[],styling:d.styling||b.styling||{},key:d.date,synced:true}:{...(b||{}),...d,key:d.date,pending:c.status!=="synced",synced:c.status==="synced"})}
+  for(const c of ch.filter(c=>c.kind==="record-delete"))log.delete(c.data?.date);
+  LOG=[...log.values()].sort((a,b)=>b.date.localeCompare(a.date));
+}
+function pendingCount(){return Store.all("changes").filter(c=>c.status!=="synced").length}
+function photos(id){const it=byId.get(id);const own=(it?.uploads||[]).map(u=>safeUrl(u.url)).filter(Boolean);const n=PHOTOS[id]||0;return [...own,...Array.from({length:n},(_,k)=>`img/${id}_${k+1}.jpg`)]}
+const wearable=it=>it&&it.status==="보유"&&(!it.availability||it.availability==="착용 가능");
+function wearCounts(){const m=new Map();for(const r of LOG)for(const x of new Set((r.items||[]).map(i=>i.id)))m.set(x,(m.get(x)||0)+1);return m}
+function lastWorn(id){const r=LOG.find(r=>(r.items||[]).some(i=>i.id===id));return r?r.date:""}
+function rolesOf(id){const it=byId.get(id);if(!it)return ["other"];return (it.roles&&it.roles.length?it.roles:CAT_ROLES[it.cat])||["other"]}
+function withRoles(items){
+  const out=items.filter(x=>byId.get(x.id)).map(x=>({id:x.id,role:x.role||""}));
+  const outers=out.filter(x=>byId.get(x.id).cat==="아우터").length;
+  for(const x of out){if(x.role)continue;const it=byId.get(x.id),sub=it.subtype||"";
+    if(it.cat==="아우터")x.role=(/베스트|조끼/.test(sub)&&outers>1)?"mid":"outer";
+    else if(it.cat==="상의")x.role=/베스트|조끼|가디건/.test(sub)?"mid":"base";
+    else x.role=rolesOf(x.id)[0];}
+  if(!out.some(x=>x.role==="base")){const m=out.find(x=>x.role==="mid"&&byId.get(x.id).cat==="상의");if(m&&out.filter(x=>x.role==="mid").length>1)m.role="base"}
+  return out;
+}
+// 레이어링 규칙(2026-11-24): 조끼가 아니면 상의 두 장 금지, 조끼도 두꺼운 니트·스웨터 위엔 금지
+const isVest=it=>/베스트|조끼/.test((it.subtype||"")+(it.name||""));
+const isThick=it=>!isVest(it)&&(/니트|스웨터/.test((it.subtype||"")+(it.name||""))&&!/가디건/.test(it.subtype||"")&&(it.warmth||0)>=6);
+function layerWarn(sel){const tops=sel.filter(x=>["base","mid"].includes(x.role)).map(x=>byId.get(x.id)).filter(Boolean);const w=[];
+  const nonVest=tops.filter(it=>!isVest(it));
+  if(nonVest.length>1)w.push(`조끼가 아닌 상의가 ${nonVest.length}장이에요 (${nonVest.map(i=>i.id).join(", ")}). 상의는 한 장, 또는 셔츠+조끼만 입어요.`);
+  if(tops.some(isVest)&&tops.some(isThick))w.push(`두꺼운 니트(${tops.filter(isThick).map(i=>i.id).join(", ")}) 위에는 조끼를 입지 않아요.`);
+  return w}
+const warmTxt=it=>it&&typeof it.warmth==="number"?`보온 ${it.warmth}`:"";
+function nextId(cat){const p=PREFIX[cat]||"A";let max=0;for(const it of ITEMS)if(it.id.startsWith(p)){const n=parseInt(it.id.slice(1),10);if(n>max)max=n}return p+String(max+1).padStart(2,"0")}
+
+// ================= illustration (ported from HERITAGE STUDIO figure.js) =================
+const get=id=>id?byId.get(id):undefined;
+function shade(hex,amount){const n=parseInt(hex.slice(1),16);return '#'+[n>>16,(n>>8)&255,n&255].map(v=>Math.max(0,Math.min(255,v+amount)).toString(16).padStart(2,'0')).join('')}
+function figure(sel,ns='main',style={}){
+  const role=r=>get(sel.find(x=>x.role===r)?.id),outer=role('outer'),base=role('base'),mid=get([...sel].reverse().find(x=>x.role==='mid')?.id),inner=mid||base,bottom=role('bottom'),shoe=role('shoes'),scarf=role('scarf'),bag=role('bag'),hat=role('hat'),belt=role('belt'),gloves=role('gloves'),layers=sel.filter(v=>['base','mid'].includes(v.role)).sort((a,b)=>Number(a.role==='mid')-Number(b.role==='mid')).map(v=>get(v.id)).filter(Boolean);
+  const c=x=>color(x?.colors?.[0]||'unknown'),sec=x=>color(x?.colors?.[1]||x?.colors?.[0]||'unknown'),type=x=>x?.subtype||'',fit=x=>x?.fit||'',patt=x=>x?.pattern||'',all=[...new Map([outer,...layers,bottom,scarf,shoe,bag,hat,belt,gloves].filter(Boolean).map(x=>[x.id,x])).values()];
+  const id=x=>`f${ns}_${x.id}`, fill=x=>x?`url(#${id(x)})`:'#bcb8ab',line=x=>shade(c(x),-22),hi=x=>shade(c(x),8),skin='#c6a189',skinLine='#997663';
+  const defs=all.map(x=>`<pattern id="${id(x)}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${c(x)}"/>${patt(x)==='체크'?`<path d="M0 5H16M5 0V16" stroke="${sec(x)}" stroke-width="4" opacity=".6"/><path d="M0 8H16M8 0V16" stroke="${line(x)}" stroke-width=".7" opacity=".45"/>`:patt(x)==='헤링본'?`<path d="M0 0L8 4 16 0M0 8L8 12 16 8M0 16L8 20 16 16" fill="none" stroke="${sec(x)}" stroke-width="1" opacity=".55"/>`:patt(x)==='스트라이프'?`<path d="M0 5H16" stroke="${sec(x)}" stroke-width="4" opacity=".85"/>`:patt(x)==='골지'?`<path d="M2 0V16M7 0V16M12 0V16" stroke="${line(x)}" stroke-width=".7" opacity=".45"/>`:patt(x)==='와플'?`<path d="M0 4H16M4 0V16M12 0V16M0 12H16" stroke="${line(x)}" stroke-width=".6" opacity=".28"/>`:''}</pattern>`).join('');
+  const grad=x=>x?c(x):'#bcb8ab', garment=x=>['체크','헤링본','스트라이프','골지','와플'].includes(patt(x))?fill(x):grad(x);
+  const wide=/와이드/.test(fit(bottom)),extra=/엑스트라/.test(fit(bottom)),slim=/슬림|테이퍼드/.test(fit(bottom)),balloon=/벌룬/.test(fit(bottom)),left=extra?82:wide?86:balloon?90:slim?96:91,right=250-left, gap=extra?5:wide?8:slim?12:10;
+  const vest=/베스트/.test(type(outer)),coat=/코트|롱패딩/.test(type(outer)),long=/롱/.test(type(outer)),puff=/패딩|다운|무톤/.test(type(outer)),hem=long?278:coat?235:puff?207:195;
+  const scarfHem=/롱/.test(type(scarf))?217:157;
+  const topHem=style.hem==='out'?200:181;
+  const sh=puff?84:/오버/.test(fit(outer))?87:91, body=puff?82:89, hemWidth=coat?82:body, sleeveEnd=puff?67:73;
+  const top=(x,isVest=false)=>{let short=/반팔/.test(type(x)),end=short?135:200, neck=/V넥/.test(type(x))?`L125 110 111 80`: `Q125 94 111 80`, t=type(x);return `<g stroke="${line(x)}" stroke-width=".9"><path d="M111 80Q101 84 91 87 ${isVest?'L96 118 96 143':'L77 108 68 '+end+' 82 '+(end+3)+' 98 117'} L91 ${topHem} Q125 ${topHem+5} 159 ${topHem} L152 117 ${isVest?'L154 118 159 87':'L168 '+(end+3)+' 182 '+end+' 173 108 159 87'} L139 80 ${neck} Z" fill="${garment(x)}"/>${/가디건/.test(t)?`<path d="M125 106V${topHem}" fill="none"/>${[116,134,152,170].map(y=>`<circle cx="127" cy="${y}" r="1.6" fill="${line(x)}"/>`).join('')}`:''}${!isVest&&!short?`<path d="M70 187L83 190M167 190L180 187" fill="none" stroke="${line(x)}"/>`:''}${/셔츠|폴로|럭비/.test(t)?`<path d="M111 80L115 99 125 91 135 99 139 80Q125 88 111 80Z" fill="${t.includes('럭비')?sec(x):grad(x)}"/><path d="M125 92V${/셔츠/.test(t)?181:119}" stroke="${line(x)}" fill="none"/>`: /헨리넥|하프집업/.test(t)?`<path d="M125 91V115" fill="none" stroke="${line(x)}" stroke-width="2"/><circle cx="125" cy="101" r="1.4" fill="${hi(x)}"/><circle cx="125" cy="109" r="1.4" fill="${hi(x)}"/>`:`<path d="M111 82Q125 100 139 82" stroke="${line(x)}" stroke-width="2.8" fill="none"/>`}${/럭비/.test(t)?`<path d="M92 106L157 142 158 159 91 123Z" fill="${sec(x)}" stroke="none"/>`:''}<path d="M92 ${topHem-5}Q125 ${topHem+1} 158 ${topHem-5}" stroke="${line(x)}" opacity=".5" fill="none"/></g>`};
+  return `<svg viewBox="0 0 250 440" aria-label="패션 일러스트 스타일의 색상 및 실루엣 조합 개념도"><defs>${defs}</defs><ellipse cx="125" cy="415" rx="53" ry="2" fill="#514b3c" opacity=".16"/><g stroke-linejoin="round" stroke-linecap="round">
+  <path d="M112 60L112 76 106 82 125 94 144 82 138 76 138 60Z" fill="${skin}" stroke="${skinLine}" stroke-width=".7"/>
+  <g transform="translate(11 8) scale(.91 .89)"><path d="M108 33Q109 18 125 18Q141 18 142 33L141 49Q138 61 130 67L123 70 114 62Q108 53 108 33Z" fill="${skin}" stroke="${skinLine}" stroke-width=".7"/><path d="M108 41Q103 32 105 25Q105 16 116 13Q132 8 142 18L145 31 140 42 138 29Q124 33 116 23L110 35Z" fill="#34352e"/><path d="M110 25Q126 13 139 24M115 18Q129 14 136 20" stroke="#666155" stroke-width="1" fill="none"/><path d="M112 43L119 42M130 42L136 43M125 45L123 52 126 53M121 59Q126 61 130 58" stroke="#8b6c58" stroke-width=".85" fill="none"/>
+  </g>
+  ${hat?`<path d="M105 35Q105 12 123 14Q143 12 144 34L149 59 140 65 135 39Q122 35 113 40L111 61 102 58Z" fill="${grad(hat)}" stroke="${line(hat)}"/>`:''}
+  <path d="M94 180Q125 174 156 180L163 213Q${wide?165:158} 250 ${right} 384L${125+gap} 386Q134 303 124 235Q116 301 ${125-gap} 386L${left} 384Q${wide?85:92} 250 87 213Z" fill="${garment(bottom)}" stroke="${line(bottom)}" stroke-width="1.1"/>
+  <path d="M125 187V226L125 237M96 187L94 207 106 215M154 187L156 207 144 215M${left+5} 374L${125-gap-4} 376M${125+gap+4} 376L${right-5} 374" fill="none" stroke="${hi(bottom)}" stroke-width="1" opacity=".65"/>
+  <path d="M103 233Q97 296 ${left+9} 371M147 233Q153 296 ${right-9} 371" fill="none" stroke="${line(bottom)}" stroke-width="1.2" opacity=".45"/>
+  ${type(bottom).includes('더블니')?`<path d="M94 242L117 244 114 305 91 303ZM133 244L156 242 159 303 136 305Z" fill="none" stroke="${hi(bottom)}" stroke-width="1.2" stroke-dasharray="3 1.2"/>`:''}
+  <path d="M${left+2} 382L${125-gap-2} 382L${125-gap+1} 395Q${125-gap+1} 403 104 405H${left-15}Q${left-19} 400 ${left-9} 394L${left+2} 390Z" fill="${grad(shoe)}" stroke="${line(shoe)}" stroke-width=".9"/><path d="M${125+gap+2} 382L${right-2} 382 ${right+8} 394Q${right+19} 400 ${right+15} 405H145Q${125+gap-1} 404 ${125+gap-1} 395Z" fill="${grad(shoe)}" stroke="${line(shoe)}" stroke-width=".9"/>
+  <path d="M${left-15} 403H${125-gap-2}M${125+gap+2} 403H${right+15}" stroke="${sec(shoe)}" stroke-width="3.4"/><path d="M${left+3} 391L${left+17} 391M${left} 394L${left+14} 394M${right-17} 391H${right-3}M${right-14} 394H${right}" stroke="${hi(shoe)}" stroke-width="1.1"/>
+  <path d="M91 113L101 117 82 206 70 204Z M150 117L158 113 180 204 168 206Z" fill="${skin}"/>
+  <path d="M72 194L69 207 72 219Q78 225 82 216L84 206 81 197Z M169 197L166 206 168 216Q172 225 178 219L181 207 178 194Z" fill="${skin}" stroke="${skinLine}" stroke-width=".7"/>
+  ${layers.length?layers.map(x=>top(x,/베스트|조끼/.test(type(x)))).join(''):top(null)}
+  ${belt&&style.hem!=='out'?`<path d="M94 182Q125 187 156 182L157 190Q125 195 93 190Z" fill="${grad(belt)}" stroke="${line(belt)}"/><rect x="120" y="184" width="10" height="8" rx="1" fill="none" stroke="#c5b69a" stroke-width="1.5"/>`:''}
+  ${outer?`<g fill="${garment(outer)}" stroke="${line(outer)}" stroke-width="1">${vest?'':`<path d="M${sh} 87Q${sh-11} 90 ${sh-15} 103L${sleeveEnd} 196 85 201 101 120 100 92Z"/><path d="M${250-sh} 87Q${261-sh} 90 ${265-sh} 103L${250-sleeveEnd} 196 165 201 149 120 150 92Z"/>`}<path d="M111 79L${sh} 86Q${sh-3} 101 98 117L${body} ${hem-3}Q101 ${hem+3} ${style.outer==='closed'?119:112} ${hem}L119 104Z"/><path d="M139 79L${250-sh} 86Q${253-sh} 101 152 117L${250-body} ${hem-3}Q149 ${hem+3} ${style.outer==='closed'?131:139} ${hem}L131 104Z"/><path d="M111 79L100 89 108 109 119 104Z M139 79L150 89 142 109 131 104Z" fill="${hi(outer)}"/>${style.outer==='closed'?`<path d="M110 81Q125 92 140 81L136 ${hem}Q125 ${hem+3} 114 ${hem}Z" fill="${garment(outer)}" stroke="none"/><path d="M125 92V${hem}" fill="none"/>`:''}${/무톤|보아/.test(type(outer))?`<path d="M111 82L119 104V${hem}M139 82L131 104V${hem}" stroke="${sec(outer)}" stroke-width="4" fill="none"/>`:''}${/패딩|다운|퀼팅/.test(type(outer))?[122,145,168,191,214,237,260].filter(y=>y<hem-5).map(y=>`<path d="M${body+3} ${y}H118M132 ${y}H${247-body}" stroke="${line(outer)}" opacity=".65" fill="none"/>`).join(''):''}<path d="M${hemWidth+8} ${hem-34}l16 4M${242-hemWidth} ${hem-34}l-16 4M${body+3} ${hem-8}L118 ${hem-5}M132 ${hem-5}L${247-body} ${hem-8}" stroke="${hi(outer)}" opacity=".65" fill="none"/>${vest?'':`<path d="M${sleeveEnd+2} 188L85 192M${248-sleeveEnd} 188L165 192" stroke="${hi(outer)}" fill="none"/>`}</g>`:''}
+  ${scarf?`<path d="M109 76Q125 85 142 76L145 89Q129 104 105 91Z M133 93L146 92 149 ${scarfHem-2} 137 ${scarfHem}Z ${style.scarf==='drape'?'M103 85L112 88 113 179 100 176Z':''}" fill="${garment(scarf)}" stroke="${line(scarf)}" stroke-width=".9"/><path d="M138 ${scarfHem}v4m4 -5v4m4 -5v4" stroke="${line(scarf)}"/>`:''}
+  ${gloves?`<path d="M68 198L82 201 83 214Q79 228 70 217L66 211Z M168 200L180 197 183 211 179 220Q172 225 167 215Z" fill="${c(gloves)}"/>`:''}
+  ${bag?`<path d="M175 212V207Q175 198 185 198Q195 198 195 207V212" stroke="${c(bag)}" stroke-width="3" fill="none"/><path d="M168 211Q185 209 202 211L204 250Q185 255 166 250Z" fill="${grad(bag)}" stroke="${line(bag)}" stroke-width="1"/><path d="M169 222H201M174 247H197" stroke="${hi(bag)}" fill="none" opacity=".75"/>`:''}
+  </g></svg>`;
+}
+
+
+
+// ================= rendering bits =================
+function thumbHtml(id,cls="thumb"){const p=photos(id);return p.length?`<img class="${cls}" src="${esc(p[0])}" alt="" loading="lazy">`:`<span class="${cls} none">사진 없음</span>`}
+function irow(id,extra=""){
+  const it=byId.get(id);
+  if(!it)return `<div class="irow"><span class="thumb none">?</span><div class="itext"><div class="l1"><span class="tag">${esc(id)}</span></div><div class="nm">옷장에 없는 ID</div></div></div>`;
+  const pill=it.status==="보유"?"":`<span class="pill warn">${esc(it.status)}</span>`;
+  return `<div class="irow">${thumbHtml(id)}<div class="itext"><div class="l1"><span class="tag">${esc(id)}</span>${extra}${pill}</div><div class="nm">${esc(it.name)}</div></div></div>`;
+}
+function plateHtml(sel,ns,style,{name="",tag="",cls="",act="",fav=false}={}){
+  const cols=[...new Set(sel.map(x=>byId.get(x.id)?.colors?.[0]).filter(Boolean))].slice(0,4);
+  return `<button type="button" class="plate ${cls}" ${act}>${tag?`<span class="plate-tag">${esc(tag)}</span>`:""}${fav?`<span class="plate-fav">★</span>`:""}${figure(sel,ns,style||{})}
+    ${name?`<span class="plate-footer"><strong>${esc(name)}</strong><span class="fabric">${cols.map(c=>`<i style="background:${color(c)}"></i>`).join("")}</span></span>`:""}</button>`;
+}
+function scoreBtns(name,val){return `<div class="score10" data-score-group="${esc(name)}">${Array.from({length:10},(_,i)=>`<button type="button" data-act="score" data-name="${esc(name)}" data-v="${i+1}" aria-pressed="${val===i+1}">${i+1}</button>`).join("")}</div>`}
+
+// ================= tabs =================
+let tab=lsGet("tab","look");
+function setTab(t){tab=t;lsSet("tab",t);document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===t)));
+  for(const s of ["look","journal","closet","stats","sync"])$("sec-"+s).hidden=s!==t;if(t!=="closet"){cst.cmp=false;cst.sel.clear();$("cmpBar").hidden=true}renderTab();window.scrollTo(0,0)}
+function renderTab(){({look:renderLook,journal:renderJournal,closet:renderCloset,stats:renderStats,sync:renderSync})[tab]();renderHeader()}
+function renderHeader(){const n=pendingCount();$("srcText").innerHTML=`시트 ${esc(snapLabel.slice(5).replace("-","/"))} 기준${n?` · <b>반영 대기 ${n}</b>`:""}`;
+  const sb=document.querySelector('.tabs [data-tab="sync"]');sb.innerHTML=`백업${n?'<span class="dot"></span>':""}`}
+
+// ================= 룩북 =================
+let PLANS=lsGet("plans",[]), activePlan=lsGet("activePlan",0), viewMode=lsGet("viewMode","figure");
+function savePlans(){lsSet("plans",PLANS);lsSet("activePlan",activePlan)}
+function favKey(p){return JSON.stringify([p.items.map(x=>[x.id,x.role]),p.styling||{}])}
+function isFav(p){const k=favKey(p);return Store.all("favorites").some(f=>f.key===k)}
+const STY=[["outer","아우터",[["open","열기"],["closed","잠그기"]]],["hem","상의",[["in","넣어 입기"],["out","꺼내 입기"]]],["scarf","목도리",[["loop","한 번 감기"],["drape","늘어뜨리기"]]]];
+function renderLook(){
+  const s=$("sec-look");
+  const head=`<div class="row spread"><h2>룩북</h2><div class="row"><button class="btn small" type="button" data-act="saved">저장한 코디</button><button class="btn small primary" type="button" data-act="import">＋ 추천 불러오기</button></div></div>`;
+  if(!PLANS.length){s.innerHTML=head+`<div class="panel"><div class="empty">아직 코디가 없어요.<br>채팅에서 추천을 받아 <b>＋ 추천 불러오기</b>에 붙여넣거나,<br>직접 만들어 보세요.</div><button class="btn block" type="button" data-act="newLook">빈 코디 직접 만들기</button></div>`;return}
+  if(activePlan>=PLANS.length)activePlan=0;
+  const p=PLANS[activePlan],sel=withRoles(p.items);p.items=sel;
+  const bad=sel.filter(x=>!wearable(byId.get(x.id)));
+  const has=r=>sel.some(x=>x.role===r);
+  const sty=STY.filter(([k])=>k==="outer"?has("outer"):k==="scarf"?has("scarf"):true);
+  const found=new Set(p.found||[]);
+  s.innerHTML=head+
+   `${PLANS.length>1?`<div class="plates">${PLANS.map((q,k)=>plateHtml(withRoles(q.items),"p"+k,q.styling,{name:q.name,tag:"LOOK "+String(k+1).padStart(2,"0"),cls:`plate${k%3}${k===activePlan?" selected":""}`,act:`data-act="pickPlan" data-i="${k}" aria-pressed="${k===activePlan}"`,fav:isFav(q)})).join("")}</div>`:""}
+   <div class="panel">
+     <div class="row spread"><h2>${esc(p.name)}</h2><button class="btn small" type="button" data-act="fav" aria-pressed="${isFav(p)}">${isFav(p)?"★ 저장됨":"☆ 저장"}</button></div>
+     ${p.reason?`<p class="note">${esc(p.reason)}</p>`:""}
+     ${bad.length?`<div class="msg warn">지금 입을 수 없는 옷: ${bad.map(x=>esc(x.id)).join(", ")}</div>`:""}
+     ${layerWarn(sel).map(t=>`<div class="msg warn">${esc(t)}</div>`).join("")}
+     <div class="seg" role="group" aria-label="보기 방식">${[["figure","예상 착샷"],["flat","실물 사진"]].map(([v,l])=>`<button type="button" data-act="view" data-v="${v}" aria-pressed="${viewMode===v}">${l}</button>`).join("")}</div>
+     ${viewMode==="figure"?plateHtml(sel,"big",p.styling,{name:"",tag:"LOOK "+String(activePlan+1).padStart(2,"0"),cls:`big plate${activePlan%3}`,act:`data-act="enlarge"`})
+       :`<div class="flat">${sel.map(x=>{const ph=photos(x.id);return ph.length?`<img src="${esc(ph[0])}" alt="${esc(x.id)}" data-act="photos" data-id="${esc(x.id)}">`:`<span class="noimg">${esc(x.id)}<br>사진 없음</span>`}).join("")}</div>`}
+     ${viewMode==="figure"?`<details class="fold"><summary>입는 방식</summary><div class="inner">${sty.map(([k,l,opts])=>`<div class="sty"><span>${l}</span><div class="seg">${opts.map(([v,t])=>`<button type="button" data-act="sty" data-k="${k}" data-v="${v}" aria-pressed="${(p.styling?.[k]||opts[0][0])===v}">${t}</button>`).join("")}</div></div>`).join("")}<p class="note">등록된 색·종류·핏으로 그린 그림이라 실제와 다를 수 있어요.</p></div></details>`:""}
+   </div>
+   <div class="panel">
+     <div class="row spread"><h3>입을 옷 · 찾으면 ✓</h3><button class="btn small" type="button" data-act="layers">레이어 편집</button></div>
+     <div>${sel.map((x,n)=>`<div class="piece${found.has(x.id)?" found":""}"><button class="opt" style="border:0;padding:0;background:none;flex:1;min-width:0" type="button" data-act="item" data-id="${esc(x.id)}">${irow(x.id,`<span>${esc(ROLE[x.role]||"")}</span>${warmTxt(byId.get(x.id))?`<span>${warmTxt(byId.get(x.id))}</span>`:""}`)}</button><button class="iconbtn" type="button" data-act="swap" data-n="${n}">교체</button><button class="iconbtn check" type="button" data-act="found" data-id="${esc(x.id)}" aria-pressed="${found.has(x.id)}" aria-label="찾음">✓</button></div>`).join("")||`<div class="empty">옷이 없어요. 레이어 편집에서 추가하세요.</div>`}</div>
+   </div>
+   <button class="btn primary block" type="button" data-act="wearPlan">오늘 이렇게 입었어요 · 기록하기</button>`;
+}
+function parsePlans(text){
+  text=(text||"").trim();if(!text)return {plans:[],err:"붙여넣은 내용이 없어요."};
+  text=text.replace(/^```[a-z]*\s*/i,"").replace(/```\s*$/,"").trim();
+  if(text[0]==="{"||text[0]==="["){
+    let j;try{j=JSON.parse(text)}catch(e){return {plans:[],err:"JSON 형식이 깨져 있어요. 채팅에서 받은 그대로 다시 붙여넣어 주세요."}}
+    const arr=Array.isArray(j)?j:(j.outfits||[]);
+    return {plans:arr.map((o,i)=>({name:String(o.name||`${i+1}안`),reason:String(o.reason||""),plan_id:String(o.plan_id||""),
+      items:(o.items||[]).map(x=>typeof x==="string"?{id:x.toUpperCase(),role:""}:{id:String(x.id||"").toUpperCase(),role:ROLE[x.role]?x.role:""}).filter(x=>x.id),
+      styling:o.styling&&typeof o.styling==="object"?{outer:o.styling.outer,hem:o.styling.hem,scarf:o.styling.scarf}:{},found:[]})).filter(p=>p.items.length)};
+  }
+  const m=text.match(/#fit-([A-Z0-9-]+)/i);if(m)text=m[1].replace(/-/g," ");
+  const lines=text.split(/\n+/).map(l=>(l.toUpperCase().match(/\b[OTBSA]\d{2}\b/g)||[])).filter(a=>a.length);
+  return {plans:lines.map((ids,i)=>({name:lines.length>1?`${i+1}안`:"코디",reason:"",items:ids.map(id=>({id,role:""})),styling:{},found:[]}))};
+}
+function openImport(){
+  openSheet("추천 불러오기",`<p class="note">채팅에서 받은 추천(JSON, 코디 링크, 또는 "O04 T48 B29 S01" 같은 ID 줄)을 붙여넣으세요. 줄마다 한 코디가 돼요.</p>
+    <textarea id="planInput" rows="6" placeholder="여기에 붙여넣기" autocomplete="off" spellcheck="false"></textarea>
+    <div class="btngrid"><button class="btn" type="button" data-act="pasteClip">클립보드에서</button><button class="btn primary" type="button" data-act="doImport">불러오기</button></div><div id="impMsg"></div>`);
+}
+function openSaved(){
+  const favs=Store.all("favorites").sort((a,b)=>(b.at||"").localeCompare(a.at||""));
+  openSheet("저장한 코디",`<h3>즐겨찾기 · ${favs.length}</h3>
+    ${favs.length?`<div class="plates">${favs.map((f,k)=>plateHtml(withRoles(f.items),"fv"+k,f.styling,{name:f.name||"즐겨찾기",cls:`plate${k%3}`,act:`data-act="openFav" data-id="${esc(f._id)}"`})).join("")}</div>`:`<p class="note">룩북에서 ☆ 저장을 누르면 여기에 모여요.</p>`}
+    <h3>최근 실제 착장</h3>
+    ${LOG.slice(0,10).map(r=>`<button class="opt" type="button" data-act="openRec" data-date="${esc(r.date)}"><div class="row spread"><span>${esc(r.date)} (${dowOf(r.date)}) · ${esc(r.occasion||"")}</span><span class="note">${(r.items||[]).map(i=>esc(i.id)).join(" ")}</span></div></button>`).join("")||`<p class="note">기록이 없어요.</p>`}`);
+}
+function openLayers(){
+  const p=PLANS[activePlan];const sel=p.items;
+  openSheet("레이어와 액세서리",`<p class="note">위에서 아래 순서가 안쪽→바깥쪽이에요. 역할을 바꾸면 그림도 바뀌어요.</p>
+    ${sel.map((x,n)=>{const it=byId.get(x.id);return `<div class="panel" style="padding:8px;gap:6px">${irow(x.id)}<div class="row"><select data-act="role" data-n="${n}" style="flex:1">${rolesOf(x.id).concat(rolesOf(x.id).includes(x.role)?[]:[x.role]).map(r=>`<option value="${r}" ${r===x.role?"selected":""}>${ROLE[r]||r}</option>`).join("")}</select><button class="iconbtn" type="button" data-act="mv" data-n="${n}" data-d="-1" aria-label="위로">↑</button><button class="iconbtn" type="button" data-act="mv" data-n="${n}" data-d="1" aria-label="아래로">↓</button><button class="iconbtn" type="button" data-act="rm" data-n="${n}">빼기</button></div></div>`}).join("")}
+    <button class="btn block" type="button" data-act="addToPlan">＋ 옷 추가</button><button class="btn primary block" type="button" data-act="closeSheet">완료</button>`);
+}
+
+// ================= picker (shared) =================
+let pickCb=null,pickCats=null,pickCat="",pickExclude=new Set();
+function openPicker(title,cats,cb,exclude=[]){pickCb=cb;pickCats=cats;pickCat="";pickExclude=new Set(exclude);$("pickTitle").textContent=title;$("pickQ").value="";$("picker").hidden=false;renderPick()}
+function renderPick(){
+  const cats=pickCats||CATS;
+  $("pickCats").innerHTML=cats.length>1?[["","전체"],...cats.map(c=>[c,c])].map(([v,l])=>`<button class="chip" type="button" data-act="pickCat" data-v="${esc(v)}" aria-pressed="${pickCat===v}">${esc(l)}</button>`).join(""):"";
+  const q=$("pickQ").value.trim().toLowerCase(),wc=wearCounts();
+  const list=ITEMS.filter(it=>cats.includes(it.cat)&&(!pickCat||it.cat===pickCat)&&wearable(it)&&!pickExclude.has(it.id)&&(!q||it.id.toLowerCase().includes(q)||it.name.toLowerCase().includes(q)));
+  $("pickList").innerHTML=list.length?list.map(it=>`<button class="opt" type="button" data-act="picked" data-id="${esc(it.id)}">${irow(it.id,`<span>${esc(it.cat)}</span><span>${wc.get(it.id)||0}회</span>`)}</button>`).join(""):`<div class="empty">고를 수 있는 옷이 없어요.</div>`;
+}
+$("pickQ").addEventListener("input",renderPick);
+
+// ================= 일지 =================
+function recFigure(r,ns,cls){const sel=withRoles(r.items||[]);return sel.length?plateHtml(sel,ns,r.styling,{cls:`mini ${cls}`,act:`data-act="recFig" data-date="${esc(r.date)}"`}):""}
+function reviewHtml(rv){if(!rv)return "";
+  return `<details class="fold review"><summary>Claude 리뷰 (내 점수와 별도)</summary><div class="inner">
+    ${rv.scores?`<div class="row">${Object.entries(rv.scores).filter(([k,v])=>v!=null).map(([k,v])=>`<span class="pill">${esc(k)} ${esc(v)}</span>`).join("")}</div>`:""}
+    ${[["strengths","잘된 점"],["weaknesses","아쉬운 점"],["suggestions","제안"],["uncertainty","불확실성"]].filter(([k])=>rv[k]).map(([k,l])=>`<div><b>${l}</b><p>${esc(rv[k])}</p></div>`).join("")}
+    ${rv.by?`<p class="note">평가: ${esc(rv.by)}</p>`:""}</div></details>`}
+function renderJournal(){
+  const s=$("sec-journal");
+  s.innerHTML=`<div class="row spread"><h2>착장 일지 · ${LOG.length}일</h2><button class="btn small primary" type="button" data-act="newRec">＋ 오늘 기록</button></div>
+  ${LOG.length?LOG.map((r,k)=>{const w=r.weather||{};
+    return `<div class="panel rec">
+      <div class="rechead"><div><div class="d">${esc(r.date)} (${dowOf(r.date)}) · ${esc(r.occasion||"상황 미입력")}${r.pending?` · <span class="pill warn">반영 대기</span>`:r.synced?` · <span class="pill ok">시트 반영됨</span>`:""}</div>
+        <b>${esc(w.condition||"날씨 미입력")} ${w.min!=null&&w.min!==""?esc(w.min):"?"}~${w.max!=null&&w.max!==""?esc(w.max):"?"}℃${w.wind?" · "+esc(w.wind):""}</b></div>
+        <div style="text-align:right"><div class="score">${r.rating!=null&&r.rating!==""?esc(r.rating):"–"}<small>/10</small></div><button class="btn ghost" type="button" data-act="openRec" data-date="${esc(r.date)}">${r.rating!=null&&r.rating!==""?"고치기":"평가하기"}</button></div></div>
+      <div class="recbody">${recFigure(r,"j"+k,"plate"+(k%3))}<div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <div class="strip">${(r.items||[]).map(i=>`<span data-act="item" data-id="${esc(i.id)}" style="cursor:pointer">${thumbHtml(i.id)}</span>`).join("")}</div>
+        <div class="note">${(r.items||[]).map(i=>esc(i.id)).join(" · ")}</div>
+        ${r.note?`<div class="note">${esc(r.note)}</div>`:""}
+      </div></div>
+      ${r.photos?.length?`<div class="photos">${r.photos.map(p=>`<img src="${esc(safeUrl(p.url))}" alt="착용 사진" data-act="recPhotos" data-date="${esc(r.date)}">`).join("")}</div>`:""}
+    </div>`}).join(""):`<div class="panel"><div class="empty">아직 기록이 없어요.</div></div>`}`;
+}
+// record editor
+let recDraft=null;
+function openRecord(date,fromPlan){
+  const old=date?LOG.find(r=>r.date===date):null;
+  if(old)recDraft=JSON.parse(JSON.stringify(old));
+  else{recDraft={date:todayKST(),occasion:"출근",rating:null,weather:{min:null,max:null,condition:"",wind:""},items:[],note:"",photos:[],styling:{}};
+    const ex=LOG.find(r=>r.date===recDraft.date);if(ex)recDraft=JSON.parse(JSON.stringify(ex));
+    if(fromPlan){recDraft.items=JSON.parse(JSON.stringify(fromPlan.items));recDraft.styling={...(fromPlan.styling||{})};recDraft.plan_id=fromPlan.plan_id||"";recDraft.planName=fromPlan.name;recDraft._swapped=!!ex}}
+  delete recDraft.feedback;recDraft.photos=recDraft.photos||[];recDraft.weather=recDraft.weather||{};
+  renderRecord();
+}
+function renderRecord(){
+  const r=recDraft,w=r.weather,sel=withRoles(r.items);
+  openSheet(LOG.some(x=>x.date===r.date)?"착장 기록 고치기":"착장 기록",`
+    <div class="grid2"><label class="f">날짜<input type="date" id="rDate" value="${esc(r.date)}"></label>
+      <label class="f">상황<select id="rOcc">${["","출근","주말","외출"].map(v=>`<option ${v===r.occasion?"selected":""} value="${v}">${v||"선택"}</option>`).join("")}</select></label></div>
+    <div class="grid2"><label class="f">날씨<select id="rCond">${["","맑음","흐림","구름많음","비","눈","비/눈"].map(v=>`<option ${v===(w.condition||"")?"selected":""} value="${v}">${v||"선택"}</option>`).join("")}</select></label>
+      <label class="f">바람<select id="rWind">${["","약함","보통","강풍"].map(v=>`<option ${v===(w.wind||"")?"selected":""} value="${v}">${v||"선택"}</option>`).join("")}</select></label></div>
+    <div class="grid2"><label class="f">최저(℃)<input type="number" inputmode="decimal" step="0.5" id="rMin" value="${w.min??""}"></label><label class="f">최고(℃)<input type="number" inputmode="decimal" step="0.5" id="rMax" value="${w.max??""}"></label></div>
+    ${r._swapped?`<div class="msg warn">오늘 기록이 이미 있어서 날씨·메모는 그대로 두고 옷만 이 코디로 바꿨어요.</div>`:""}
+    <div class="panel" style="padding:10px">
+      <div class="row spread"><h3>입은 옷 · ${sel.length}벌</h3><button class="btn small" type="button" data-act="recAdd">＋ 옷 추가</button></div>
+      ${sel.length?`<div style="display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:start">${plateHtml(sel,"rec",r.styling,{cls:"mini plate1",act:`data-act="recFigBig"`})}<div>${sel.map((x,n)=>`<div class="piece">${irow(x.id,`<span>${esc(ROLE[x.role]||"")}</span>`)}<button class="iconbtn" type="button" data-act="recRm" data-n="${n}" aria-label="빼기">×</button></div>`).join("")}</div></div>`:`<p class="note">옷을 추가하세요.</p>`}
+    </div>
+    ${layerWarn(sel).map(t=>`<div class="msg warn">${esc(t)}</div>`).join("")}
+    <div class="dim"><span>만족도 (1~10, 비워도 돼요)</span>${scoreBtns("rating",r.rating)}</div>
+    <div class="dim"><span>착용 사진 (최대 4장)</span><div class="photos">${r.photos.map((p,n)=>`<span class="ph"><img src="${esc(safeUrl(p.url))}" alt=""><button class="x" type="button" data-act="recPhRm" data-n="${n}" aria-label="사진 빼기">×</button></span>`).join("")}</div>
+      ${ASSETS?(r.photos.length<4?`<input type="file" id="rPhoto" accept="image/*" multiple>`:""):`<p class="note">이 화면에서는 사진을 올릴 수 없어요.</p>`}</div>
+    <label class="f">메모 (덥거나 추웠는지, 다시 입을지 등)<textarea id="rNote" rows="3" placeholder="예: 버스에서 더웠음. 다시 입기: 예">${esc(r.note||"")}</textarea></label>
+    <div id="recMsg"></div>
+    <div class="btngrid">${LOG.some(x=>x.date===r.date)?`<button class="btn" type="button" data-act="recDel">이 기록 지우기</button>`:`<button class="btn" type="button" data-act="closeSheet">취소</button>`}<button class="btn primary" type="button" data-act="recSave">저장</button></div>
+    <p class="note">저장하면 이 휴대폰에 남아요. 백업 탭의 "기록 복사"로 Claude에게 보내면 시트에도 옮겨 드려요.</p>`);
+  const ph=$("rPhoto");if(ph)ph.onchange=uploadRecPhotos;
+}
+function readRecForm(){const r=recDraft,n=v=>v===""?null:Number(v);
+  if(!$("rDate"))return;r.date=$("rDate").value;r.occasion=$("rOcc").value;r.weather={min:n($("rMin").value),max:n($("rMax").value),condition:$("rCond").value,wind:$("rWind").value};
+  r.note=$("rNote").value;}
+async function uploadRecPhotos(e){
+  readRecForm();const files=[...e.target.files].slice(0,4-recDraft.photos.length);if(!files.length)return;
+  $("recMsg").innerHTML=`<div class="msg ok">사진 올리는 중…</div>`;
+  try{for(const f of files){const a=await ASSETS.upload(f);recDraft.photos.push({id:a.id,url:a.url})}renderRecord()}
+  catch(err){$("recMsg").innerHTML=`<div class="msg err">사진을 올리지 못했어요.</div>`}
+}
+async function saveRecord(){
+  readRecForm();const r=recDraft;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date||""))return $("recMsg").innerHTML=`<div class="msg err">날짜를 골라 주세요.</div>`;
+  if(r.weather.min!=null&&r.weather.max!=null&&r.weather.min>r.weather.max)return $("recMsg").innerHTML=`<div class="msg err">최저기온이 최고기온보다 높아요.</div>`;
+  if(!r.items.length)return $("recMsg").innerHTML=`<div class="msg err">입은 옷을 하나 이상 넣어 주세요.</div>`;
+  const bad=r.items.filter(x=>!wearable(byId.get(x.id))&&!BASE_LOG.some(b=>b.date===r.date));if(bad.length)return $("recMsg").innerHTML=`<div class="msg err">지금 입을 수 없는 옷: ${bad.map(x=>esc(x.id)).join(", ")}</div>`;
+  const data={...r,items:withRoles(r.items)};delete data.pending;delete data.key;delete data._swapped;delete data.synced;delete data.feedback;delete data.legacy;delete data.planName;
+  try{await Store.set("changes","rec-"+r.date,{kind:"record",status:"pending",at:new Date().toISOString(),data});}
+  catch(e){return $("recMsg").innerHTML=`<div class="msg err">저장하지 못했어요. 다시 눌러 주세요.</div>`}
+  rebuild();closeSheet();setTab("journal");toast("착장을 기록했어요");
+}
+async function deleteRecord(){
+  const d=recDraft.date;
+  if(BASE_LOG.some(b=>b.date===d)){await Store.set("changes","rec-"+d,{kind:"record-delete",status:"pending",at:new Date().toISOString(),data:{date:d}})}
+  else await Store.del("changes","rec-"+d);
+  rebuild();closeSheet();renderTab();toast("기록을 지웠어요");
+}
+
+// ================= 옷장 =================
+const cst={cat:lsGet("cat",""),color:"",status:"보유",q:"",cmp:false,sel:new Set()};
+function renderCloset(){
+  const wc=wearCounts();
+  const base=ITEMS.filter(it=>cst.status==="all"||it.status===cst.status);
+  const cats=CATS.filter(c=>base.some(i=>i.cat===c));
+  $("catChips").innerHTML=[["","전체",base.length],...cats.map(c=>[c,c,base.filter(i=>i.cat===c).length])].map(([v,l,n])=>`<button class="chip" type="button" data-act="cat" data-v="${esc(v)}" aria-pressed="${cst.cat===v}">${esc(l)}<span class="n">${n}</span></button>`).join("");
+  const colorKeys=[...new Set(base.map(i=>i.colors?.[0]).filter(Boolean))].filter(k=>k!=="unknown"&&k!=="mixed");
+  $("colorChips").innerHTML=[`<button class="chip" type="button" data-act="color" data-v="" aria-pressed="${!cst.color}">모든 색</button>`,...colorKeys.map(k=>`<button class="chip" type="button" data-act="color" data-v="${esc(k)}" aria-pressed="${cst.color===k}"><span class="sw" style="background:${color(k)}"></span>${esc(clabel(k))}</button>`)].join("");
+  $("statusChips").innerHTML=[["보유","입을 수 있는 옷"],["주문(배송 전)","배송 전"],["처분","처분"],["all","전부"]].map(([v,l])=>`<button class="chip" type="button" data-act="status" data-v="${esc(v)}" aria-pressed="${cst.status===v}">${esc(l)}</button>`).join("");
+  $("cmpMode").setAttribute("aria-pressed",String(cst.cmp));$("cmpMode").textContent=cst.cmp?"비교 끝내기":"비교";
+  const q=cst.q.toLowerCase();
+  const list=base.filter(it=>(!cst.cat||it.cat===cst.cat)&&(!cst.color||it.colors?.[0]===cst.color)&&(!q||it.id.toLowerCase().includes(q)||it.name.toLowerCase().includes(q)||(it.detail||"").toLowerCase().includes(q)));
+  $("closetCount").textContent=cst.cmp?`비교할 옷을 2~4개 고르세요 · ${list.length}벌`:`${list.length}벌`;
+  $("closet").innerHTML=list.length?list.map(it=>{const p=photos(it.id);
+    return `<button type="button" class="ccard${cst.sel.has(it.id)?" sel":""}" data-act="${cst.cmp?"cmpPick":"item"}" data-id="${esc(it.id)}">${cst.cmp?`<span class="selmark">${cst.sel.has(it.id)?"✓":""}</span>`:""}${p.length?`<img src="${esc(p[0])}" alt="" loading="lazy">`:`<span class="noimg">사진 없음</span>`}
+      <span class="cb"><span class="l1"><span class="tag">${esc(it.id)}</span><span>${wc.get(it.id)||0}회</span>${it.status!=="보유"?`<span class="pill warn">${esc(it.status)}</span>`:""}${it.pending?`<span class="pill warn">반영 대기</span>`:""}</span><span class="nm">${esc(it.name)}</span></span></button>`}).join(""):`<div class="empty">맞는 옷이 없어요.</div>`;
+  $("cmpBar").hidden=!cst.cmp||cst.sel.size<1;$("cmpText").textContent=`${cst.sel.size}개 선택`;
+}
+$("q").addEventListener("input",e=>{cst.q=e.target.value.trim();renderCloset()});
+function openItem(id){
+  const it=byId.get(id);if(!it)return;const p=photos(id),wc=wearCounts().get(id)||0,lw=lastWorn(id);
+  const row=(k,v)=>v!=null&&v!==""&&!(Array.isArray(v)&&!v.length)?`<dt>${k}</dt><dd>${v}</dd>`:"";
+  openSheet(`${it.id} · ${it.name}`,`
+    ${p.length?`<div class="gallery">${p.map((s,k)=>`<img src="${esc(s)}" alt="" data-act="photos" data-id="${esc(id)}" data-k="${k}">`).join("")}</div>`:`<div class="msg warn">사진이 없어요.</div>`}
+    <div class="row">${it.status!=="보유"?`<span class="pill warn">${esc(it.status)}</span>`:`<span class="pill ok">입을 수 있음</span>`}${it.pending?`<span class="pill warn">반영 대기</span>`:""}<span class="pill">${wc}회 입음${lw?" · 마지막 "+esc(lw.slice(5)):""}</span></div>
+    <dl class="dl">${row("분류",esc(it.cat))}${row("세부 종류",esc(it.subtype||""))}
+      ${row("색",(it.colors||[]).map(c=>`<span class="sw" style="background:${color(c)}"></span>${esc(clabel(c))}`).join(" "))}
+      ${row("패턴",esc(it.pattern||""))}${row("핏",esc(it.fit||""))}${row("핏 체감",esc(it.fit_feedback||""))}${row("보온",it.warmth?esc(it.warmth)+"/10":"")}
+      ${row("비 주의",esc(it.rain_caution||""))}${row("스타일",esc((it.style_tags||[]).join(", ")))}${row("상세",esc(it.detail))}${row("계절",esc(it.season))}${row("비고",esc(it.note))}${row("수량",it.quantity&&it.quantity>1?esc(it.quantity):"")}${row("색 근거",esc(it.color_confidence||""))}</dl>
+    <div class="btngrid"><button class="btn" type="button" data-act="editItem" data-id="${esc(id)}">정보 고치기</button><button class="btn" type="button" data-act="addLook" data-id="${esc(id)}" ${wearable(it)?"":"disabled"}>코디에 넣기</button></div>`);
+}
+let itemDraft=null;
+function openItemForm(id){
+  const it=id?byId.get(id):null;
+  itemDraft=it?JSON.parse(JSON.stringify(it)):{id:"",cat:"상의",name:"",detail:"",season:"",status:"보유",note:"",subtype:"",colors:["unknown"],pattern:"미확인",fit:"미확인",warmth:null,rain_caution:"",uploads:[]};
+  itemDraft.uploads=itemDraft.uploads||[];
+  if(!it)itemDraft.id=nextId(itemDraft.cat);
+  renderItemForm(!!it);
+}
+function renderItemForm(isEdit){
+  const x=itemDraft,pal=Object.keys(PALETTE);
+  openSheet(isEdit?`${x.id} 정보 고치기`:"새 옷 등록",`
+    <div class="grid2"><label class="f">분류<select id="iCat" ${isEdit?"disabled":""}>${CATS.map(c=>`<option ${c===x.cat?"selected":""}>${c}</option>`).join("")}</select></label><label class="f">ID (자동)<input id="iId" value="${esc(x.id)}" readonly></label></div>
+    <label class="f">이름<input id="iName" value="${esc(x.name)}" placeholder="예: 브라운 헨리넥 니트"></label>
+    <label class="f">세부 종류 (그림에 쓰여요)<input id="iSub" value="${esc(x.subtype||"")}" placeholder="예: 헨리넥 니트, 와이드 데님, 패딩 코트"></label>
+    <div class="grid2"><label class="f">주색<select id="iColor">${pal.map(k=>`<option value="${k}" ${k===(x.colors||[])[0]?"selected":""}>${esc(clabel(k))}</option>`).join("")}</select></label>
+      <label class="f">패턴<select id="iPat">${[...new Set([x.pattern||"미확인",...PATTERNS])].map(v=>`<option ${v===x.pattern?"selected":""}>${esc(v)}</option>`).join("")}</select></label></div>
+    <div class="dim"><span>보조색 (여러 개 가능)</span><div class="chips wrapc">${pal.filter(k=>k!=="unknown").map(k=>`<button class="chip" type="button" data-act="subColor" data-v="${k}" aria-pressed="${(x.colors||[]).slice(1).includes(k)}"><span class="sw" style="background:${color(k)}"></span>${esc(clabel(k))}</button>`).join("")}</div></div>
+    <div class="grid2"><label class="f">핏<select id="iFit">${[...new Set([x.fit||"미확인",...FITS])].map(v=>`<option ${v===x.fit?"selected":""}>${esc(v)}</option>`).join("")}</select></label>
+      <label class="f">보온 (1~10)<select id="iWarm">${["",1,2,3,4,5,6,7,8,9,10].map(v=>`<option value="${v}" ${String(v)===String(x.warmth??"")?"selected":""}>${v||"미확인"}</option>`).join("")}</select></label></div>
+    <div class="grid2"><label class="f">상태<select id="iStat">${["보유","주문(배송 전)","처분"].map(v=>`<option ${v===x.status?"selected":""}>${v}</option>`).join("")}</select></label>
+      <label class="f">비 주의<select id="iRain">${["","스웨이드","가죽","울","기타"].map(v=>`<option value="${v}" ${v===(x.rain_caution||"")?"selected":""}>${v||"없음"}</option>`).join("")}</select></label></div>
+    <label class="f">상세 (브랜드·사이즈·소재, 모르면 미확인)<input id="iDetail" value="${esc(x.detail)}"></label>
+    <label class="f">핏 체감 메모<input id="iFb" value="${esc(x.fit_feedback||"")}" placeholder="예: 어깨가 조금 낌"></label>
+    <label class="f">비고<input id="iNote" value="${esc(x.note)}"></label>
+    <div class="dim"><span>사진</span><div class="photos">${x.uploads.map((u,n)=>`<span class="ph"><img src="${esc(safeUrl(u.url))}" alt=""><button class="x" type="button" data-act="itemPhRm" data-n="${n}" aria-label="사진 빼기">×</button></span>`).join("")}</div>
+      ${ASSETS?`<input type="file" id="iPhoto" accept="image/*">`:`<p class="note">이 화면에서는 사진을 올릴 수 없어요.</p>`}</div>
+    <div id="itemMsg"></div>
+    <div class="btngrid"><button class="btn" type="button" data-act="closeSheet">취소</button><button class="btn primary" type="button" data-act="itemSave" data-edit="${isEdit?1:0}">저장</button></div>
+    <p class="note">${isEdit?"처분한 옷은 지우지 말고 상태를 '처분'으로 바꿔요.":"새 옷은 다음 번호로 등록돼요."} 백업 탭의 "기록 복사"로 Claude에게 보내면 시트에도 옮겨요.</p>`);
+  const c=$("iCat");if(c)c.onchange=()=>{readItemForm();itemDraft.cat=c.value;itemDraft.id=nextId(c.value);renderItemForm(false)};
+  const ph=$("iPhoto");if(ph)ph.onchange=async e=>{readItemForm();const f=e.target.files[0];if(!f)return;$("itemMsg").innerHTML=`<div class="msg ok">사진 올리는 중…</div>`;
+    try{const a=await ASSETS.upload(f);itemDraft.uploads.push({id:a.id,url:a.url});renderItemForm(isEdit)}catch(err){$("itemMsg").innerHTML=`<div class="msg err">사진을 올리지 못했어요.</div>`}};
+}
+function readItemForm(){const x=itemDraft;if(!$("iName"))return;
+  x.name=$("iName").value.trim();x.subtype=$("iSub").value.trim();x.colors=[$("iColor").value,...(x.colors||[]).slice(1).filter(k=>k!==$("iColor").value)];
+  x.pattern=$("iPat").value;x.fit=$("iFit").value;x.warmth=$("iWarm").value?Number($("iWarm").value):null;x.status=$("iStat").value;x.rain_caution=$("iRain").value;
+  x.detail=$("iDetail").value.trim()||"미확인";x.fit_feedback=$("iFb").value.trim();x.note=$("iNote").value.trim();}
+async function saveItem(isEdit){
+  readItemForm();const x=itemDraft;
+  if(!x.name)return $("itemMsg").innerHTML=`<div class="msg err">이름을 적어 주세요.</div>`;
+  if(!isEdit&&byId.has(x.id))x.id=nextId(x.cat);
+  const data={...x};delete data.pending;
+  if(!isEdit){data.roles=CAT_ROLES[x.cat];data.availability=x.status==="보유"?"착용 가능":"사용 불가"}
+  else if(x.status!=="보유")data.availability="사용 불가"; else data.availability="착용 가능";
+  try{await Store.set("changes","item-"+x.id,{kind:"item",isNew:!isEdit&&!BASE_ITEMS.some(b=>b.id===x.id),status:"pending",at:new Date().toISOString(),data})}
+  catch(e){return $("itemMsg").innerHTML=`<div class="msg err">저장하지 못했어요. 다시 눌러 주세요.</div>`}
+  rebuild();closeSheet();renderTab();toast(isEdit?"고쳤어요":`${x.id}로 등록했어요`);
+}
+function openCompare(){
+  const arr=[...cst.sel].map(id=>byId.get(id)).filter(Boolean).slice(0,4);if(arr.length<2){toast("2개 이상 골라 주세요");return}
+  const wc=wearCounts();const f=[["분류",x=>x.cat],["세부 종류",x=>x.subtype],["색",x=>(x.colors||[]).map(clabel).join(", ")],["패턴",x=>x.pattern],["핏",x=>x.fit],["보온",x=>x.warmth?x.warmth+"/10":"미확인"],["착용",x=>(wc.get(x.id)||0)+"회"],["비 주의",x=>x.rain_caution||"없음"],["상세",x=>x.detail]];
+  openSheet("옷 비교",`<div class="compare" style="grid-template-columns:repeat(${arr.length},minmax(0,1fr))">${arr.map(x=>{const p=photos(x.id);return `<div class="col">${p.length?`<img src="${esc(p[0])}" alt="">`:`<span class="noimg">사진 없음</span>`}<div><span class="tag">${esc(x.id)}</span></div><div class="v"><b>${esc(x.name)}</b></div>${f.map(([k,fn])=>`<div><div class="k">${k}</div><div class="v">${esc(fn(x)||"미확인")}</div></div>`).join("")}</div>`}).join("")}</div>`);
+}
+
+// ================= 통계 =================
+function bars(rows,max){return rows.map(([label,v,sub])=>`<div class="brow"><span class="bn">${label}</span><span class="bar"><i style="width:${max?Math.round(v/max*100):0}%"></i></span><span class="bv">${sub??v}</span></div>`).join("")}
+function renderStats(){
+  const wc=wearCounts(),days=LOG.length,owned=ITEMS.filter(i=>i.status==="보유");
+  const scores=LOG.map(r=>Number(r.rating)).filter(v=>v>0);const avg=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):"–";
+  const unworn=owned.filter(i=>!wc.get(i.id));
+  const nm=id=>`<span class="tag">${esc(id)}</span> ${esc(byId.get(id)?.name||"")}`;
+  const top=[...wc.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const outer=new Map();for(const r of LOG)for(const i of r.items||[])if(byId.get(i.id)?.cat==="아우터")outer.set(i.id,(outer.get(i.id)||0)+1);
+  const outerRows=[...outer.entries()].sort((a,b)=>b[1]-a[1]);
+  const catRows=CATS.map(c=>{const o=owned.filter(i=>i.cat===c);return [c,o.length,o.filter(i=>!wc.get(i.id)).length]}).filter(r=>r[1]);
+  const colorCnt={};for(const i of owned){const c=i.colors?.[0];if(c)colorCnt[c]=(colorCnt[c]||0)+1}
+  const colorRows=Object.entries(colorCnt).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const wornColor={};for(const r of LOG)for(const i of r.items||[]){const c=byId.get(i.id)?.colors?.[0];if(c)wornColor[c]=(wornColor[c]||0)+1}
+  const rain=LOG.filter(r=>/비|눈/.test(r.weather?.condition||""));
+  const panel=(t,body)=>`<div class="panel"><h2>${t}</h2>${body}</div>`;
+  $("sec-stats").innerHTML=`
+    <div class="kpis"><div class="kpi"><div class="v">${days}</div><div class="k">기록한 날</div></div><div class="kpi"><div class="v">${avg}</div><div class="k">평균 만족도 (${scores.length}건)</div></div><div class="kpi"><div class="v">${unworn.length}</div><div class="k">안 입은 옷</div></div></div>
+    <p class="note">입을 수 있는 옷 ${owned.length} · 배송 전 ${ITEMS.filter(i=>i.status==="주문(배송 전)").length} · 처분 ${ITEMS.filter(i=>i.status==="처분").length}${days<10?` · 기록이 ${days}일뿐이라 경향은 아직 일러요.`:""}</p>
+    ${panel("많이 입은 옷",top.length?bars(top.map(([id,v])=>[nm(id),v]),top[0][1]):`<div class="empty">기록이 없어요.</div>`)}
+    ${panel("아우터별 착용 일수",outerRows.length?bars(outerRows.map(([id,v])=>[nm(id),v]),outerRows[0][1]):`<div class="empty">기록이 없어요.</div>`)}
+    ${panel("만족도 기록",LOG.filter(r=>Number(r.rating)>0).length?bars(LOG.filter(r=>Number(r.rating)>0).slice(0,10).map(r=>[esc(r.date.slice(5))+` <span class="note">${esc(r.weather?.min??"?")}~${esc(r.weather?.max??"?")}℃</span>`,Number(r.rating),r.rating+"점"]),10):`<div class="empty">아직 점수가 없어요.</div>`)}
+    ${panel("보유 옷 주색 분포",bars(colorRows.map(([k,v])=>[`<span class="sw" style="background:${color(k)}"></span>${esc(clabel(k))}${wornColor[k]?` <span class="note">· 입은 ${wornColor[k]}</span>`:""}`,v]),colorRows[0]?.[1]||1))}
+    ${panel("분류별 안 입은 옷",`<p class="note">안 입은 수 / 보유 수</p>`+catRows.map(([c,n,u])=>`<div class="brow"><span class="bn">${esc(c)}</span><span class="bar"><i style="width:${Math.round(u/n*100)}%"></i></span><span class="bv">${u}/${n}</span></div>`).join(""))}
+    ${panel("비·눈 오는 날 착장",rain.length?rain.map(r=>`<div class="note">${esc(r.date.slice(5))} · ${(r.items||[]).map(i=>esc(i.id)).join(" ")}</div>`).join(""):`<div class="empty">기록이 없어요.</div>`)}`;
+}
+
+// ================= 백업 · 반영 =================
+function changeSummary(c){const d=c.data||{};
+  if(c.kind==="record")return `착장 기록 ${d.date} · ${(d.items||[]).map(i=>i.id).join(" ")}${d.rating?` · ${d.rating}점`:""}${d.photos?.length?` · 사진 ${d.photos.length}`:""}`;
+  if(c.kind==="record-delete")return `착장 기록 ${d.date} 지우기`;
+  if(c.kind==="item")return `${c.isNew?"새 옷":"옷 정보 수정"} ${d.id} ${d.name||""}${d.status&&d.status!=="보유"?` · ${d.status}`:""}`;
+  return c.kind}
+function renderSync(){
+  const ch=Store.all("changes").filter(c=>c.status!=="synced").sort((a,b)=>(a.at||"").localeCompare(b.at||""));
+  const where=Store.db?"이 앱의 저장 공간(다른 기기에서 열어도 같아요)":"이 휴대폰 브라우저 (다른 기기와 공유 안 돼요)";
+  $("sec-sync").innerHTML=`
+    <div class="panel"><h2>시트 반영 대기 · ${ch.length}건</h2>
+      ${ch.length?`<p class="note"><b>① 기록 복사</b>를 눌러 Claude 채팅에 붙여넣으면 시트에 옮겨 드려요. 옮겼다고 답이 오면 <b>② 반영 완료로 표시</b>를 눌러 주세요.</p>
+        ${ch.map(c=>`<div class="piece"><div class="itext"><div class="nm">${esc(changeSummary(c))}</div><div class="l1">${esc((c.at||"").slice(0,16).replace("T"," "))}</div></div><button class="iconbtn" type="button" data-act="chDel" data-id="${esc(c._id)}">취소</button></div>`).join("")}
+        <div class="btngrid"><button class="btn primary" type="button" data-act="copyChanges">① 기록 복사</button><button class="btn" type="button" data-act="markSynced">② 반영 완료로 표시</button></div>`
+      :`<p class="note">반영할 내용이 없어요. 앱에서 기록·평가·옷 정보를 저장하면 여기에 쌓여요.</p>`}
+      <div id="copyOut"></div></div>
+    ${(()=>{const done=Store.all("changes").filter(c=>c.status==="synced").sort((a,b)=>(b.syncedAt||b.at||"").localeCompare(a.syncedAt||a.at||"")).slice(0,10);
+      return done.length?`<div class="panel"><h2>시트 반영 완료 · 최근 ${done.length}건</h2><p class="note">시트에 옮긴 내용이에요. 앱에서는 "시트 반영됨"으로 보여요.</p>${done.map(c=>`<div class="piece"><div class="itext"><div class="nm">${esc(changeSummary(c))}</div><div class="l1"><span class="pill ok">반영됨</span>${esc((c.syncedAt||"").slice(0,16).replace("T"," "))}</div></div></div>`).join("")}</div>`:""})()}
+    <div class="panel"><h2>백업</h2>
+      <p class="note">저장한 코디·반영 대기 내용·불러온 추천을 파일 하나로 받아 둘 수 있어요.</p>
+      <div class="btngrid"><button class="btn" type="button" data-act="exportB">백업 파일 받기</button><button class="btn" type="button" data-act="importB">백업 불러오기</button></div><div id="bkMsg"></div></div>
+    <div class="panel"><h2>중요: 백업</h2><p class="note">기록과 사진은 이 휴대폰 안에만 저장돼요. 앱을 지우거나 브라우저 데이터를 지우면 사라지니, 가끔 <b>백업 파일 받기</b>를 눌러 두세요. (사진은 백업 파일에 들어가지 않아요.)</p></div>
+    <div class="panel"><h2>데이터 기준</h2>
+      <dl class="dl"><dt>옷장·일지</dt><dd>옷장 시트 ${esc(snapLabel)} 기준 · 옷 ${ITEMS.length}개 · 기록 ${LOG.length}일</dd><dt>앱 저장</dt><dd>${esc(where)}</dd><dt>사진</dt><dd>${ASSETS?"올릴 수 있어요":"이 화면에서는 못 올려요"}</dd></dl>
+      <p class="note">기준 데이터는 옷장 시트예요. 시트가 바뀌면 채팅에서 "앱 갱신해줘"라고 해 주세요. 갱신된 앱은 인터넷에 연결된 상태로 열면 받아져요.</p></div>`;
+}
+function changesText(){const ch=Store.all("changes").filter(c=>c.status!=="synced");
+  return "앱 기록 시트에 반영해줘\n"+ch.map(c=>{const d=c.data||{};
+    if(c.kind==="record"){const w=d.weather||{};return `- 착장 ${d.date}(${dowOf(d.date)}) ${d.occasion||""} | ${w.condition||""} ${w.min??"?"}~${w.max??"?"}℃ ${w.wind||""} | ${withRoles(d.items||[]).map(i=>i.id+"("+(ROLE[i.role]||"")+")").join(" ")} | 만족도 ${d.rating??"-"}${d.note?" | 메모 "+d.note:""}`}
+    if(c.kind==="record-delete")return `- 착장 ${d.date} 기록 삭제`;
+    if(c.kind==="item")return `- ${c.isNew?"새 옷":"수정"} ${d.id} ${d.cat} "${d.name}" | 세부 ${d.subtype||"-"} | 색 ${(d.colors||[]).map(clabel).join("/")} | 패턴 ${d.pattern} | 핏 ${d.fit} | 보온 ${d.warmth??"-"} | 상태 ${d.status} | 상세 ${d.detail||"미확인"}${d.note?" | 비고 "+d.note:""}`;
+    return ""}).join("\n")}
+async function exportBackup(){
+  const data={app:"heritage-mobile",version:1,exported:new Date().toISOString(),snapshot:snapLabel,changes:Store.mem.changes,favorites:Store.mem.favorites,plans:PLANS};
+  const txt=JSON.stringify(data,null,2),name=`heritage-backup-${todayKST()}.json`;
+  if(DOWNLOADS){try{await DOWNLOADS.save({filename:name,data:new Blob([txt],{type:"application/json"})});$("bkMsg").innerHTML=`<div class="msg ok">저장했어요.</div>`;return}catch(e){if(e&&e.code==="declined")return}}
+  $("bkMsg").innerHTML=`<div class="msg warn">파일로 저장할 수 없어서 내용을 보여 드려요. 길게 눌러 복사해 두세요.</div><textarea readonly rows="6">${esc(txt)}</textarea>`;
+}
+async function importBackup(file){
+  try{const j=JSON.parse(await file.text());if(j.app!=="heritage-mobile")throw 0;
+    let n=0;for(const [id,v] of Object.entries(j.changes||{}))if(!Store.get("changes",id)){await Store.set("changes",id,v);n++}
+    for(const [id,v] of Object.entries(j.favorites||{}))if(!Store.get("favorites",id)){await Store.set("favorites",id,v);n++}
+    if(Array.isArray(j.plans)&&!PLANS.length){PLANS=j.plans;savePlans()}
+    rebuild();renderTab();toast(`${n}건을 불러왔어요`);
+  }catch(e){toast("백업 파일이 아니에요")}
+}
+
+// ================= sheets & lightbox =================
+function openSheet(title,html){$("sheetTitle").textContent=title;$("sheetBody").innerHTML=html;$("sheet").hidden=false;$("sheetBody").scrollTop=0}
+function closeSheet(){$("sheet").hidden=true;$("sheetBody").innerHTML=""}
+function showLb(title,html){$("lbTitle").textContent=title;$("lbImgs").innerHTML=html;$("lb").hidden=false}
+function showPhotos(id,k=0){const it=byId.get(id);showLb(`${id} ${it?it.name:""}`,photos(id).map(s=>`<img src="${esc(s)}" alt="">`).join(""));const el=$("lbImgs");requestAnimationFrame(()=>el.scrollLeft=el.clientWidth*k)}
+
+// ================= one click handler =================
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-act]");if(!t)return;const a=t.dataset.act,d=t.dataset;
+  const plan=()=>PLANS[activePlan];
+  switch(a){
+    case "closeSheet":closeSheet();break;
+    case "closePicker":$("picker").hidden=true;break;
+    case "closeLb":$("lb").hidden=true;break;
+    // lookbook
+    case "import":openImport();break;
+    case "pasteClip":try{$("planInput").value=await navigator.clipboard.readText()}catch(err){$("impMsg").innerHTML=`<div class="msg warn">클립보드를 읽지 못했어요. 칸을 길게 눌러 붙여넣어 주세요.</div>`}break;
+    case "doImport":{const r=parsePlans($("planInput").value);if(r.err||!r.plans.length){$("impMsg").innerHTML=`<div class="msg err">${esc(r.err||"옷 ID를 찾지 못했어요.")}</div>`;break}
+      PLANS=r.plans;activePlan=0;savePlans();closeSheet();setTab("look");toast(`${r.plans.length}가지 코디를 불러왔어요`);break}
+    case "newLook":PLANS=[{name:"내 코디",reason:"",items:[],styling:{},found:[]}];activePlan=0;savePlans();renderLook();openLayers();break;
+    case "saved":openSaved();break;
+    case "pickPlan":activePlan=+d.i;savePlans();renderLook();break;
+    case "enlarge":{const p=plan();showLb(p.name,figure(withRoles(p.items),"lb",p.styling||{}));break}
+    case "view":viewMode=d.v;lsSet("viewMode",viewMode);renderLook();break;
+    case "sty":{const p=plan();p.styling={...(p.styling||{}),[d.k]:d.v};savePlans();renderLook();break}
+    case "found":{const p=plan(),f=new Set(p.found||[]);f.has(d.id)?f.delete(d.id):f.add(d.id);p.found=[...f];savePlans();renderLook();break}
+    case "fav":{const p=plan(),k=favKey(p),ex=Store.all("favorites").find(f=>f.key===k);
+      try{if(ex){await Store.del("favorites",ex._id);toast("저장을 뺐어요")}else{await Store.set("favorites","fav-"+uid(),{key:k,name:p.name,items:p.items,styling:p.styling||{},at:new Date().toISOString()});toast("저장했어요")}}catch(err){toast("저장하지 못했어요")}
+      renderLook();break}
+    case "openFav":{const f=Store.get("favorites",d.id);if(!f)break;PLANS=[{name:f.name||"즐겨찾기",reason:"",items:f.items,styling:f.styling||{},found:[]}];activePlan=0;savePlans();closeSheet();setTab("look");break}
+    case "openRec":closeSheet();openRecord(d.date);break;
+    case "swap":{const p=plan(),x=p.items[+d.n],it=byId.get(x.id);
+      const cats=CATS.filter(c=>(CAT_ROLES[c]||[]).includes(x.role));
+      openPicker(`${ROLE[x.role]||""} 교체`,cats.length?cats:[it.cat],id=>{p.items[+d.n]={id,role:x.role};p.found=(p.found||[]).filter(f=>f!==x.id);savePlans();renderLook()},p.items.map(i=>i.id));break}
+    case "layers":openLayers();break;
+    case "role":break;
+    case "mv":{const p=plan(),n=+d.n,m=n+(+d.d);if(m<0||m>=p.items.length)break;[p.items[n],p.items[m]]=[p.items[m],p.items[n]];savePlans();renderLook();openLayers();break}
+    case "rm":{const p=plan();p.items.splice(+d.n,1);savePlans();renderLook();openLayers();break}
+    case "addToPlan":{const p=plan();openPicker("옷 추가",CATS,id=>{p.items.push({id,role:""});p.items=withRoles(p.items);savePlans();renderLook();openLayers()},p.items.map(i=>i.id));break}
+    case "wearPlan":openRecord(null,plan());break;
+    // picker
+    case "pickCat":pickCat=d.v;renderPick();break;
+    case "picked":$("picker").hidden=true;if(pickCb)pickCb(d.id);break;
+    // journal
+    case "newRec":openRecord(null);break;
+    case "recFig":{const r=LOG.find(x=>x.date===d.date);if(r)showLb(r.date,figure(withRoles(r.items),"lb",r.styling||{}));break}
+    case "recFigBig":readRecForm();showLb("예상 착샷",figure(withRoles(recDraft.items),"lb",recDraft.styling||{}));break;
+    case "recPhotos":{const r=LOG.find(x=>x.date===d.date);if(r)showLb(r.date+" 착용 사진",r.photos.map(p=>`<img src="${esc(safeUrl(p.url))}" alt="">`).join(""));break}
+    case "recAdd":readRecForm();openPicker("입은 옷 추가",CATS,id=>{recDraft.items.push({id,role:""});recDraft.items=withRoles(recDraft.items);renderRecord()},recDraft.items.map(i=>i.id));break;
+    case "recRm":readRecForm();recDraft.items.splice(+d.n,1);renderRecord();break;
+    case "recPhRm":readRecForm();recDraft.photos.splice(+d.n,1);renderRecord();break;
+    case "score":{const name=d.name,v=+d.v;
+      if(recDraft&&!$("sheet").hidden){readRecForm();if(name==="rating")recDraft.rating=recDraft.rating===v?null:v;else{const k=name.slice(4);recDraft.feedback.dimensions[k]=recDraft.feedback.dimensions[k]===v?null:v}
+        t.parentElement.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.v===(name==="rating"?recDraft.rating:recDraft.feedback.dimensions[name.slice(4)]))))}break}
+    case "tag":{const tg=recDraft.feedback.tags,i=tg.indexOf(d.v);i>=0?tg.splice(i,1):tg.push(d.v);t.setAttribute("aria-pressed",String(i<0));break}
+    case "recSave":saveRecord();break;
+    case "recDel":deleteRecord();break;
+    // closet
+    case "item":openItem(d.id);break;
+    case "photos":showPhotos(d.id,+(d.k||0));break;
+    case "cat":cst.cat=d.v;lsSet("cat",cst.cat);renderCloset();break;
+    case "color":cst.color=d.v;renderCloset();break;
+    case "status":cst.status=d.v;renderCloset();break;
+    case "cmpMode":cst.cmp=!cst.cmp;cst.sel.clear();renderCloset();break;
+    case "cmpPick":cst.sel.has(d.id)?cst.sel.delete(d.id):(cst.sel.size<4?cst.sel.add(d.id):toast("4개까지 비교할 수 있어요"));renderCloset();break;
+    case "cmpOpen":openCompare();break;
+    case "cmpClear":cst.cmp=false;cst.sel.clear();renderCloset();break;
+    case "newItem":openItemForm(null);break;
+    case "editItem":openItemForm(d.id);break;
+    case "subColor":{readItemForm();const cs=itemDraft.colors,i=cs.indexOf(d.v);if(i>0)cs.splice(i,1);else if(i<0)cs.push(d.v);t.setAttribute("aria-pressed",String(i<0));break}
+    case "itemPhRm":readItemForm();itemDraft.uploads.splice(+d.n,1);renderItemForm(!!byId.get(itemDraft.id)&&BASE_ITEMS.some(b=>b.id===itemDraft.id));break;
+    case "itemSave":saveItem(d.edit==="1");break;
+    case "addLook":{if(!PLANS.length){PLANS=[{name:"내 코디",reason:"",items:[],styling:{},found:[]}];activePlan=0}
+      const p=PLANS[activePlan];if(!p.items.some(i=>i.id===d.id))p.items.push({id:d.id,role:""});p.items=withRoles(p.items);savePlans();closeSheet();setTab("look");toast(`${d.id}를 코디에 넣었어요`);break}
+    // sync
+    case "chDel":await Store.del("changes",d.id);rebuild();renderTab();break;
+    case "copyChanges":{const txt=changesText();try{await navigator.clipboard.writeText(txt);toast("복사했어요. 채팅에 붙여넣어 주세요")}catch(err){$("copyOut").innerHTML=`<div class="msg warn">길게 눌러 전체 선택 후 복사하세요.</div><textarea readonly rows="7">${esc(txt)}</textarea>`}break}
+    case "markSynced":{const now=new Date().toISOString();for(const c of Store.all("changes").filter(c=>c.status!=="synced")){const {_id,...v}=c;await Store.set("changes",_id,{...v,status:"synced",syncedAt:now})}rebuild();renderTab();toast("반영 완료로 표시했어요");break}
+    case "exportB":exportBackup();break;
+    case "importB":$("importFile").click();break;
+  }
+});
+document.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.act==="role"){const p=PLANS[activePlan];p.items[+t.dataset.n].role=t.value;savePlans();renderLook()}});
+$("importFile").onchange=e=>{const f=e.target.files[0];if(f)importBackup(f);e.target.value=""};
+for(const id of ["sheet","picker"])$(id).addEventListener("click",e=>{if(e.target.id===id)$(id).hidden=true});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("lb").hidden=true;$("picker").hidden=true;$("sheet").hidden=true}});
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+
+// ================= boot =================
+(async function(){
+  BASE_ITEMS=SNAPSHOT.map(rowToItem);BASE_LOG=SNAPSHOT_LOG.map(sheetLogToRec);REVIEWS=Object.fromEntries(SNAPSHOT_REVIEWS.map(r=>[r.date,r]));
+  Store.mem.changes=lsGet("changes",{});Store.mem.favorites=lsGet("favorites",{});
+  rebuild();
+  const h=location.hash;if(h.startsWith("#fit-")){const r=parsePlans(h);if(r.plans.length){PLANS=r.plans;activePlan=0;savePlans();tab="look"}}
+  setTab(["look","journal","closet","stats","sync"].includes(tab)?tab:"look");
+  await Store.init();
+  try{await IDB.open();for(const [k,b] of await IDB.all())LOCALPH.set(k,URL.createObjectURL(b));ASSETS=LocalAssets}catch(e){}
+  DOWNLOADS=LocalDownloads;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+  if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+  rebuild();renderTab();
+})();
+</script>
